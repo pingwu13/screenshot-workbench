@@ -15,6 +15,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import { ImageUpload } from "@/components/upload/image-upload"
+import { CategorySelect } from "@/components/cards/category-select"
 import { authFetch } from "@/lib/api-client"
 import { getBrowserClient } from "@/lib/supabase-browser"
 import { useI18n } from "@/i18n/context"
@@ -90,7 +91,7 @@ export function CardForm({ initialData }: CardFormProps) {
     type: initialData?.type || "reference",
     status: initialData?.status || "inbox",
     tags: initialData?.tags || [],
-    label: initialData?.label || "",
+    category: initialData?.category || "",
     note: initialData?.note || "",
     imageUrl: initialData?.imageUrl || "",
     imagePath: initialData?.imagePath || "",
@@ -256,14 +257,8 @@ export function CardForm({ initialData }: CardFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
-          <Label>标签</Label>
-          <Select value={form.label || ""} onValueChange={(v) => updateField("label", v || "")}>
-            <SelectTrigger><SelectValue placeholder="选择标签" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">无标签</SelectItem>
-              {CARD_LABELS.map((l) => (<SelectItem key={l} value={l}>{l}</SelectItem>))}
-            </SelectContent>
-          </Select>
+          <Label>分类</Label>
+          <CategorySelect value={form.category || ""} onChange={(v) => updateField("category", v)} />
         </div>
         <div className="space-y-1">
           <Label>{t.card.status}</Label>

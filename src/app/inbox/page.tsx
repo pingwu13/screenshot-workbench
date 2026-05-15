@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react"
 import { Card } from "@/types/card"
 import { ProtectedPage } from "@/components/layout/protected-page"
 import { authFetch } from "@/lib/api-client"
-import { CARD_LABELS } from "@/data/card-labels"
+import { getCategoryColorClass } from "@/lib/category-colors"
 import { useI18n } from "@/i18n/context"
 import { Inbox, CheckCircle, Circle } from "lucide-react"
 import Link from "next/link"
@@ -13,27 +13,37 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 
+interface CatItem { id: string; name: string; color: string; sort_order: number }
+
 export default function InboxPage() {
   const { t } = useI18n()
   const [cards, setCards] = useState<Card[]>([])
+  const [categories, setCategories] = useState<CatItem[]>([])
   const [classifyMode, setClassifyMode] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [typeDialog, setTypeDialog] = useState(false)
   const [pickedLabel, setPickedLabel] = useState("")
   const [saving, setSaving] = useState(false)
 
+  const loadCategories = useCallback(async () => {
+    try { const res = await authFetch("/api/categories"); if (res.ok) setCategories(await res.json()) } catch {}
+  }, [])
+
   const fetchCards = useCallback(async () => {
     const res = await authFetch("/api/cards")
     const all = await res.json()
     // Inbox = cards without a label
-    setCards((Array.isArray(all) ? all : []).filter((c: Card) => !c.label || !c.label.trim()))
+    setCards((Array.isArray(all) ? all : []).filter((c: Card) => !c.category || !c.category.trim()))
   }, [])
 
+  useEffect(() => { loadCategories() }, [loadCategories])
   useEffect(() => {
     fetchCards()
-    window.addEventListener("cards-updated", fetchCards)
-    return () => window.removeEventListener("cards-updated", fetchCards)
-  }, [fetchCards])
+    const h = () => { fetchCards(); loadCategories() }
+    window.addEventListener("cards-updated", h)
+    window.addEventListener("categories-updated", h)
+    return () => { window.removeEventListener("cards-updated", h); window.removeEventListener("categories-updated", h) }
+  }, [fetchCards, loadCategories])
 
   const toggleSelect = (id: string) => {
     const next = new Set(selected)
@@ -119,8 +129,8 @@ export default function InboxPage() {
             <DialogHeader><DialogTitle>选择分类标签</DialogTitle></DialogHeader>
             <p className="text-sm text-muted-foreground">将 {selected.size} 张卡片分类到：</p>
             <div className="grid grid-cols-2 gap-2">
-              {CARD_LABELS.map((l) => (
-                <Button key={l} variant={pickedLabel === l ? "default" : "outline"} onClick={() => setPickedLabel(l)}>{l}</Button>
+              {categories.map((c) => (
+                <Button key={c.id} variant={pickedLabel === c.name ? "default" : "outline"} onClick={() => setPickedLabel(c.name)}>{c.name}</Button>
               ))}
             </div>
             <div className="flex gap-2 justify-end mt-2">

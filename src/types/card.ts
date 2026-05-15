@@ -10,7 +10,7 @@ export interface Card {
   type: CardType
   status: CardStatus
   tags: string[]
-  label: string
+  category: string
   note: string
   imageUrl: string
   imagePath: string

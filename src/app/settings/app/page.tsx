@@ -9,7 +9,124 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
-import { Loader2, Settings, Palette, Type, Trash2, RotateCcw } from "lucide-react"
+import { Loader2, Settings, Palette, Type, Trash2, RotateCcw, ChevronUp, ChevronDown, Pencil, Tag } from "lucide-react"
+import { authFetch } from "@/lib/api-client"
+import { getCategoryColorClass, CATEGORY_COLORS } from "@/lib/category-colors"
+import { cn } from "@/lib/utils"
+
+interface CatItem2 { id: string; name: string; color: string; sort_order: number }
+
+function CategoryManagement() {
+  const [cats, setCats] = useState<CatItem2[]>([])
+  const [newCatName, setNewCatName] = useState("")
+  const [newCatColor, setNewCatColor] = useState("gray")
+  const [adding, setAdding] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editName, setEditName] = useState("")
+  const [editColor, setEditColor] = useState("gray")
+
+  const loadCats = useCallback(async () => {
+    const res = await authFetch("/api/categories")
+    if (res.ok) setCats(await res.json())
+  }, [])
+
+  useEffect(() => { loadCats() }, [loadCats])
+  useEffect(() => {
+    const h = () => loadCats()
+    window.addEventListener("categories-updated", h)
+    return () => window.removeEventListener("categories-updated", h)
+  }, [loadCats])
+
+  const addCat = async () => {
+    const name = newCatName.trim()
+    if (!name) { toast.error("名称不能为空"); return }
+    setAdding(true)
+    const res = await authFetch("/api/categories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, color: newCatColor }) })
+    if (!res.ok) { toast.error("新增失败"); setAdding(false); return }
+    toast.success(`已新增分类「${name}」`)
+    setNewCatName(""); setNewCatColor("gray"); setAdding(false)
+    await loadCats()
+    window.dispatchEvent(new Event("categories-updated"))
+  }
+
+  const updateCat = async (id: string) => {
+    const name = editName.trim()
+    if (!name) { toast.error("名称不能为空"); return }
+    const res = await authFetch(`/api/categories/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, color: editColor }) })
+    if (!res.ok) { toast.error("修改失败"); return }
+    toast.success("分类已更新")
+    setEditingId(null)
+    await loadCats()
+    window.dispatchEvent(new Event("categories-updated"))
+    window.dispatchEvent(new Event("cards-updated"))
+  }
+
+  const deleteCat = async (cat: CatItem2) => {
+    if (!confirm(`删除分类「${cat.name}」？相关卡片将变为未分类。`)) return
+    const res = await authFetch(`/api/categories/${cat.id}`, { method: "DELETE" })
+    if (!res.ok) { toast.error("删除失败"); return }
+    toast.success(`已删除分类「${cat.name}」，相关卡片已设为未分类`)
+    await loadCats()
+    window.dispatchEvent(new Event("categories-updated"))
+    window.dispatchEvent(new Event("cards-updated"))
+  }
+
+  const moveCat = async (cat: CatItem2, dir: -1 | 1) => {
+    const idx = cats.findIndex((c) => c.id === cat.id)
+    if (idx === -1) return
+    const target = cats[idx + dir]
+    if (!target) return
+    await authFetch(`/api/categories/${cat.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sort_order: target.sort_order }) })
+    await authFetch(`/api/categories/${target.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sort_order: cat.sort_order }) })
+    await loadCats()
+    window.dispatchEvent(new Event("categories-updated"))
+  }
+
+  return (
+    <Card>
+      <CardHeader><CardTitle className="text-base flex items-center gap-2"><Tag className="h-4 w-4" />分类管理</CardTitle></CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-sm text-muted-foreground">管理新建卡片、资料库筛选和收集箱分类时使用的分类。</p>
+        {cats.length === 0 ? (
+          <p className="text-sm text-muted-foreground">暂无分类，请新增。</p>
+        ) : (
+          <div className="space-y-1">
+            {cats.map((c, i) => (
+              <div key={c.id} className="flex items-center gap-2 p-2 rounded-lg border">
+                {editingId === c.id ? (
+                  <>
+                    <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-8 w-32" maxLength={20} />
+                    <select value={editColor} onChange={(e) => setEditColor(e.target.value)} className="h-8 rounded border px-1 text-xs">
+                      {CATEGORY_COLORS.map((clr) => (<option key={clr} value={clr}>{clr}</option>))}
+                    </select>
+                    <Button size="sm" onClick={() => updateCat(c.id)}>保存</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>取消</Button>
+                  </>
+                ) : (
+                  <>
+                    <span className={cn("px-2 py-0.5 rounded text-xs font-medium", getCategoryColorClass(c.color))}>{c.name}</span>
+                    <span className="text-xs text-muted-foreground flex-1" />
+                    <Button size="icon" variant="ghost" className="h-6 w-6" disabled={i === 0} onClick={() => moveCat(c, -1)}><ChevronUp className="h-3 w-3" /></Button>
+                    <Button size="icon" variant="ghost" className="h-6 w-6" disabled={i === cats.length - 1} onClick={() => moveCat(c, 1)}><ChevronDown className="h-3 w-3" /></Button>
+                    <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => { setEditingId(c.id); setEditName(c.name); setEditColor(c.color) }}><Pencil className="h-3 w-3" /></Button>
+                    <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={() => deleteCat(c)}><Trash2 className="h-3 w-3" /></Button>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="flex gap-2">
+          <Input value={newCatName} onChange={(e) => setNewCatName(e.target.value)} placeholder="新分类名称" maxLength={20} className="h-8 w-40" />
+          <select value={newCatColor} onChange={(e) => setNewCatColor(e.target.value)} className="h-8 rounded border px-1 text-xs">
+            {CATEGORY_COLORS.map((clr) => (<option key={clr} value={clr}>{clr}</option>))}
+          </select>
+          <Button size="sm" onClick={addCat} disabled={adding}>{adding ? "..." : "新增分类"}</Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
 
 const BG_OPTIONS = [
   { value: "light", label: "浅色" },
@@ -246,6 +363,9 @@ export default function AppSettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Category Management */}
+        <CategoryManagement />
 
         {/* Reset — at the very bottom */}
         <Card className="border-dashed">

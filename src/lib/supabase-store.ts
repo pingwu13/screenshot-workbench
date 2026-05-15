@@ -21,7 +21,7 @@ function toCard(row: Record<string, unknown>): Card {
     type: row.type as Card["type"],
     status: row.status as Card["status"],
     tags: row.tags as string[],
-    label: row.label as string,
+    category: row.category as string,
     note: row.note as string,
     imageUrl: row.image_url as string,
     imagePath: row.image_path as string,
@@ -42,7 +42,7 @@ function toDb(input: UpdateCardInput & { userId?: string }): Record<string, unkn
   if (input.type !== undefined) db.type = input.type
   if (input.status !== undefined) db.status = input.status
   if (input.tags !== undefined) db.tags = input.tags
-  if (input.label !== undefined) db.label = input.label
+  if (input.category !== undefined) db.category = input.category
   if (input.note !== undefined) db.note = input.note
   if (input.imageUrl !== undefined) db.image_url = input.imageUrl
   if (input.imagePath !== undefined) db.image_path = input.imagePath

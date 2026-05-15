@@ -13,7 +13,9 @@ import { ArrowLeft, Pencil, Trash2, Calendar, Tag, Target } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { authFetch } from "@/lib/api-client"
-import { CARD_LABELS } from "@/data/card-labels"
+import { CategorySelect } from "@/components/cards/category-select"
+import { getCategoryColorClass } from "@/lib/category-colors"
+import { cn } from "@/lib/utils"
 
 export default function CardDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -22,9 +24,9 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
   const from = searchParams.get("from")
   const { t } = useI18n()
   const [card, setCard] = useState<Card | null>(null)
-  const [cardLabel, setCardLabel] = useState("")
+  const [cardCategory, setCardCategory] = useState("")
   const [loading, setLoading] = useState(true)
-  const [savingLabel, setSavingLabel] = useState(false)
+  const [savingCategory, setSavingCategory] = useState(false)
 
   const fetchCard = useCallback(async () => {
     try {
@@ -32,7 +34,7 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
       if (!res.ok) throw new Error("Not found")
       const data = await res.json()
       setCard(data)
-      setCardLabel(data.label || "")
+      setCardCategory(data.label || "")
     } catch {
       toast.error(t.card.notFound)
       router.back()
@@ -43,20 +45,20 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
 
   useEffect(() => { fetchCard() }, [fetchCard])
 
-  const handleLabelChange = async (newLabel: string) => {
+  const handleCategoryChange = async (newCategory: string) => {
     if (!card) return
-    setSavingLabel(true)
+    setSavingCategory(true)
     try {
       await authFetch(`/api/cards/${card.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label: newLabel }),
+        body: JSON.stringify({ category: newCategory }),
       })
-      setCardLabel(newLabel)
+      setCardCategory(newCategory)
       window.dispatchEvent(new Event("cards-updated"))
-      toast.success(newLabel ? `标签已设为「${newLabel}」` : "已清除标签")
-    } catch { toast.error("更新标签失败") }
-    finally { setSavingLabel(false) }
+      toast.success(newCategory ? `分类已设为「${newCategory}」` : "已清除分类")
+    } catch { toast.error("更新分类失败") }
+    finally { setSavingCategory(false) }
   }
 
   const handleDelete = async () => {
@@ -115,7 +117,9 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
         <h1 className="text-xl font-bold">{card.title || t.card.unnamed}</h1>
         <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="secondary">{CARD_STATUS_LABELS[card.status]}</Badge>
-          {card.label ? <Badge>{card.label}</Badge> : null}
+          {card.category ? (
+            <Badge className={cn(getCategoryColorClass("gray"))}>{card.category}</Badge>
+          ) : null}
         </div>
         {card.summary && <p className="text-muted-foreground">{card.summary}</p>}
       </div>
@@ -130,13 +134,8 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
           </div>
         )}
         <div className="space-y-1.5">
-          <p className="text-xs font-medium text-muted-foreground flex items-center gap-1"><Tag className="h-3 w-3" />标签</p>
-          <select value={cardLabel} onChange={(e) => handleLabelChange(e.target.value)}
-            disabled={savingLabel}
-            className="w-full h-8 rounded-md border border-input bg-background px-2.5 text-sm">
-            <option value="">未分类</option>
-            {CARD_LABELS.map((l) => <option key={l} value={l}>{l}</option>)}
-          </select>
+          <p className="text-xs font-medium text-muted-foreground flex items-center gap-1"><Tag className="h-3 w-3" />分类</p>
+          <CategorySelect value={cardCategory} onChange={(v) => handleCategoryChange(v)} showAdd={false} />
         </div>
         {card.nextAction && (
           <div className="space-y-1.5">

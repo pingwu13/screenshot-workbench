@@ -1,34 +1,17 @@
 "use client"
 
 import Link from "next/link"
-import { Card } from "@/types/card"
-import { CARD_TYPE_LABELS } from "@/types/card"
+import { Card, CARD_STATUS_LABELS } from "@/types/card"
 import { Badge } from "@/components/ui/badge"
 import { useI18n } from "@/i18n/context"
-import type { Dictionary } from "@/i18n/dictionaries"
+import { getCategoryColorClass } from "@/lib/category-colors"
 import { cn } from "@/lib/utils"
 import { Calendar } from "lucide-react"
-import type { CardType, CardStatus } from "@/types/card"
 
 interface CardItemProps {
   card: Card
   from?: string
   className?: string
-}
-
-const TYPE_COLORS: Record<string, string> = {
-  learn: "bg-blue-100 text-blue-800 border-blue-200",
-  todo: "bg-orange-100 text-orange-800 border-orange-200",
-  reference: "bg-purple-100 text-purple-800 border-purple-200",
-  idea: "bg-green-100 text-green-800 border-green-200",
-}
-
-function getTypeLabel(t: Dictionary, type: CardType) {
-  return t.type[type] ?? CARD_TYPE_LABELS[type]
-}
-
-function getStatusLabel(t: Dictionary, status: CardStatus) {
-  return t.status[status]
 }
 
 export function CardItem({ card, from, className }: CardItemProps) {
@@ -65,8 +48,8 @@ export function CardItem({ card, from, className }: CardItemProps) {
           )}>
             {card.title || t.card.unnamed}
           </h3>
-          {card.label ? (
-            <Badge variant="outline" className="shrink-0 text-xs">{card.label}</Badge>
+          {card.category ? (
+            <Badge variant="outline" className={cn("shrink-0 text-xs", getCategoryColorClass("gray"))}>{card.category}</Badge>
           ) : null}
         </div>
 
@@ -78,7 +61,7 @@ export function CardItem({ card, from, className }: CardItemProps) {
 
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-muted-foreground">
-            {getStatusLabel(t, card.status)}
+            {CARD_STATUS_LABELS[card.status]}
           </span>
 
           {card.tags.length > 0 && (

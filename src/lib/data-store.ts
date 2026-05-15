@@ -49,7 +49,7 @@ export const cardStore = {
       type: input.type,
       status: input.status,
       tags: input.tags,
-      label: input.label || "",
+      category: input.category || "",
       note: input.note,
       imageUrl: input.imageUrl,
       imagePath: input.imagePath,
