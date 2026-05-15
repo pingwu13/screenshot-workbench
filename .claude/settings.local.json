@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(pwd)",
+      "Bash(ls)",
+      "Bash(ls *)",
+      "Bash(ls -la)",
+      "Bash(ls -la *)",
+
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+
+      "Bash(python --version)",
+      "Bash(node --version)",
+      "Bash(npm --version)",
+
+      "Bash(cat README*)",
+      "Bash(cat CLAUDE.md)",
+      "Bash(cat AGENTS.md)",
+      "Bash(cat package.json)",
+      "Bash(cat pyproject.toml)",
+      "Bash(cat requirements.txt)",
+      "Bash(cat environment.yml)",
+      "Bash(cat .gitignore)",
+      "Bash(cat .claude/settings.local.json)",
+      "Bash(cat .claude/settings.json)",
+
+      "Bash(head *)",
+      "Bash(head -n * *)",
+      "Bash(tail *)",
+      "Bash(tail -n * *)",
+
+      "Bash(sed -n * *)",
+
+      "Bash(grep -n * *)",
+      "Bash(grep -R -n * .)",
+      "Bash(rg *)",
+      "Bash(rg --files)",
+      "Bash(rg --files .)",
+
+      "Bash(find . -maxdepth 1 -type f)",
+      "Bash(find . -maxdepth 2 -type f)",
+      "Bash(find . -maxdepth 3 -type f)",
+      "Bash(find . -maxdepth 2 -type d)",
+      "Bash(file *)",
+      "Bash(wc -l *)"
+    ],
+    "ask": [
+      "Bash",
+      "Edit",
+      "Write",
+      "MultiEdit",
+      "WebFetch"
+    ],
+    "deny": [
+      "Bash(rm *)",
+      "Bash(rm -r *)",
+      "Bash(rm -rf *)",
+      "Bash(rm -fr *)",
+      "Bash(rmdir *)",
+      "Bash(find * -delete *)",
+      "Bash(find * -exec rm *)",
+
+      "Bash(git clean *)",
+      "Bash(git reset --hard *)",
+      "Bash(git push *)",
+
+      "Bash(sudo *)",
+      "Bash(chmod -R *)",
+      "Bash(chown -R *)",
+
+      "Bash(cat ~/.ssh/*)",
+      "Bash(cat ~/.aws/*)",
+      "Bash(cat ~/.config/*)",
+      "Bash(cat ~/.zshrc)",
+      "Bash(cat ~/.bashrc)",
+      "Bash(cat ~/.claude/*)",
+      "Bash(cat *.env)",
+      "Bash(cat .env)",
+      "Bash(cat .env.*)",
+
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)",
+      "Read(./credentials/**)",
+      "Read(./config/credentials.json)",
+
+      "Edit(./.env)",
+      "Edit(./.env.*)",
+      "Edit(./secrets/**)",
+      "Edit(./credentials/**)",
+      "Edit(./config/credentials.json)"
+    ]
+  }
+}
+
