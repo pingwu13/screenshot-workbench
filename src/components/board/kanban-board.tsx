@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { Card, CardStatus, CARD_STATUS_ORDER } from "@/types/card"
 import { KanbanColumn } from "@/components/board/kanban-column"
+import { authFetch } from "@/lib/api-client"
 import { useI18n } from "@/i18n/context"
 import {
   DndContext,
@@ -65,7 +66,7 @@ export function KanbanBoard({ initialCards }: KanbanBoardProps) {
     )
 
     try {
-      const res = await fetch(`/api/cards/${cardId}`, {
+      const res = await authFetch(`/api/cards/${cardId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),

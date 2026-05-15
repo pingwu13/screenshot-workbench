@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardType, CardStatus, CreateCardInput } from "@/types/card"
 import { CARD_TYPE_LABELS, CARD_STATUS_LABELS } from "@/types/card"
@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ImageUpload } from "@/components/upload/image-upload"
+import { authFetch } from "@/lib/api-client"
 import { useI18n } from "@/i18n/context"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
@@ -38,6 +39,7 @@ export function CardForm({ initialData }: CardFormProps) {
     tags: initialData?.tags || [],
     note: initialData?.note || "",
     imageUrl: initialData?.imageUrl || "",
+    imagePath: initialData?.imagePath || "",
     ocrText: initialData?.ocrText || "",
     nextAction: initialData?.nextAction || "",
   })
@@ -45,6 +47,21 @@ export function CardForm({ initialData }: CardFormProps) {
   const [tagInput, setTagInput] = useState("")
   const [saving, setSaving] = useState(false)
   const [processing, setProcessing] = useState(false)
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
+
+  // Track an image uploaded via OCR+AI but not yet tied to a card
+  const orphanStorageKey = useRef<string | null>(null)
+
+  // Cleanup orphan image on unmount (user navigated away without submitting)
+  useEffect(() => {
+    return () => {
+      const key = orphanStorageKey.current
+      if (key) {
+        authFetch(`/api/upload?key=${encodeURIComponent(key)}`, { method: "DELETE" })
+          .catch(() => {})
+      }
+    }
+  }, [])
 
   const updateField = <K extends keyof CreateCardInput>(
     key: K,
@@ -68,24 +85,50 @@ export function CardForm({ initialData }: CardFormProps) {
     )
   }
 
+  // Upload a file to storage, returns { imageUrl, storageKey }
+  const uploadImage = useCallback(async (file: File) => {
+    const formData = new FormData()
+    formData.append("file", file)
+    const res = await authFetch("/api/upload", { method: "POST", body: formData })
+    if (!res.ok) throw new Error("Upload failed")
+    return res.json() as Promise<{ imageUrl: string; storageKey: string }>
+  }, [])
+
   const handleOcrAndAi = async () => {
-    if (!form.imageUrl) {
+    // Need an image URL first; if we only have a pending file, upload it now
+    let imageUrl = form.imageUrl
+
+    if (!imageUrl && pendingFile) {
+      try {
+        const result = await uploadImage(pendingFile)
+        imageUrl = result.imageUrl
+        orphanStorageKey.current = result.storageKey
+        updateField("imageUrl", imageUrl)
+        updateField("imagePath", result.storageKey)
+        setPendingFile(null)
+      } catch {
+        toast.error(t.card.processFailed)
+        return
+      }
+    }
+
+    if (!imageUrl) {
       toast.error(t.card.uploadHint)
       return
     }
 
     setProcessing(true)
     try {
-      const ocrRes = await fetch("/api/ocr", {
+      const ocrRes = await authFetch("/api/ocr", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: form.imageUrl }),
+        body: JSON.stringify({ imageUrl }),
       })
       const ocrData = await ocrRes.json()
       updateField("ocrText", ocrData.text)
       toast.success(t.card.ocrDone)
 
-      const aiRes = await fetch("/api/ai/summarize", {
+      const aiRes = await authFetch("/api/ai/summarize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ocrText: ocrData.text }),
@@ -107,14 +150,46 @@ export function CardForm({ initialData }: CardFormProps) {
 
   const handleSubmit = async () => {
     setSaving(true)
+    let newlyUploadedKey: string | null = null
+
     try {
+      let finalImageUrl = form.imageUrl
+
+      // Step 1: Upload image if there's a pending file
+      if (pendingFile) {
+        const result = await uploadImage(pendingFile)
+        finalImageUrl = result.imageUrl
+        newlyUploadedKey = result.storageKey
+      }
+
+      // Step 2: Create or update the card
       const url = isEdit ? `/api/cards/${initialData!.id}` : "/api/cards"
       const method = isEdit ? "PATCH" : "POST"
-      const res = await fetch(url, {
+      const cardData = {
+        ...form,
+        imageUrl: finalImageUrl,
+        imagePath: newlyUploadedKey || form.imagePath,
+      }
+      const res = await authFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(cardData),
       })
+
+      if (!res.ok) {
+        // Step 3: Card creation failed — clean up the image we just uploaded
+        if (newlyUploadedKey) {
+          await authFetch(`/api/upload?key=${encodeURIComponent(newlyUploadedKey)}`, {
+            method: "DELETE",
+          }).catch(() => {})
+        }
+        throw new Error("Card creation failed")
+      }
+
+      // Success — clear orphan tracking (image is now owned by the card)
+      orphanStorageKey.current = null
+      setPendingFile(null)
+
       const data = await res.json()
       toast.success(isEdit ? t.card.saved : t.card.created)
       router.push(`/cards/${data.id}`)
@@ -127,24 +202,31 @@ export function CardForm({ initialData }: CardFormProps) {
     }
   }
 
+  const handleCancel = () => {
+    // Clean up orphan image if user uploaded via OCR+AI but didn't submit
+    const key = orphanStorageKey.current
+    if (key) {
+      fetch(`/api/upload?key=${encodeURIComponent(key)}`, { method: "DELETE" })
+        .catch(() => {})
+    }
+    router.back()
+  }
+
+  const hasImage = form.imageUrl || pendingFile
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Image Upload */}
       <div className="space-y-2">
         <Label>{t.card.uploadScreenshot}</Label>
         <ImageUpload
-          previewUrl={form.imageUrl}
-          onUpload={(url) => {
-            updateField("imageUrl", url)
-            if (!isEdit && !form.ocrText) {
-              toast.info(t.card.uploadHint)
-            }
-          }}
+          existingUrl={form.imageUrl || undefined}
+          onFileChange={(file) => setPendingFile(file)}
         />
       </div>
 
       {/* OCR + AI Button */}
-      {form.imageUrl && (
+      {hasImage && (
         <Button
           variant="outline"
           className="w-full gap-2"
@@ -299,11 +381,7 @@ export function CardForm({ initialData }: CardFormProps) {
         <Button onClick={handleSubmit} disabled={saving} className="flex-1">
           {saving ? t.card.saving : isEdit ? t.card.update : t.card.create}
         </Button>
-        <Button
-          variant="outline"
-          onClick={() => router.back()}
-          type="button"
-        >
+        <Button variant="outline" onClick={handleCancel} type="button">
           {t.card.cancel}
         </Button>
       </div>

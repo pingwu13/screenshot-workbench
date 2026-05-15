@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react"
 import { Card } from "@/types/card"
 import { CardGrid } from "@/components/cards/card-grid"
+import { ProtectedPage } from "@/components/layout/protected-page"
+import { authFetch } from "@/lib/api-client"
 import { useI18n } from "@/i18n/context"
 import { Inbox } from "lucide-react"
 import Link from "next/link"
@@ -13,32 +15,26 @@ export default function InboxPage() {
   const [cards, setCards] = useState<Card[]>([])
 
   const fetchCards = useCallback(async () => {
-    const res = await fetch(`/api/cards?status=inbox`)
+    const res = await authFetch(`/api/cards?status=inbox`)
     setCards(await res.json())
   }, [])
 
-  useEffect(() => {
-    fetchCards()
-  }, [fetchCards])
+  useEffect(() => { fetchCards() }, [fetchCards])
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Inbox className="h-6 w-6" />
-            {t.inbox.title}
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            {t.inbox.subtitle} ({cards.length})
-          </p>
+    <ProtectedPage>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+              <Inbox className="h-6 w-6" />{t.inbox.title}
+            </h1>
+            <p className="text-muted-foreground mt-1">{t.inbox.subtitle} ({cards.length})</p>
+          </div>
+          <Link href="/cards/new"><Button>{t.nav.newCard}</Button></Link>
         </div>
-        <Link href="/cards/new">
-          <Button>{t.nav.newCard}</Button>
-        </Link>
+        <CardGrid cards={cards} />
       </div>
-
-      <CardGrid cards={cards} />
-    </div>
+    </ProtectedPage>
   )
 }

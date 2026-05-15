@@ -4,6 +4,7 @@ export type CardStatus = "inbox" | "planned" | "doing" | "done" | "archived"
 
 export interface Card {
   id: string
+  userId: string
   title: string
   summary: string
   type: CardType
@@ -11,13 +12,14 @@ export interface Card {
   tags: string[]
   note: string
   imageUrl: string
+  imagePath: string
   ocrText: string
   nextAction: string
   createdAt: string
   updatedAt: string
 }
 
-export type CreateCardInput = Omit<Card, "id" | "createdAt" | "updatedAt">
+export type CreateCardInput = Omit<Card, "id" | "userId" | "createdAt" | "updatedAt">
 export type UpdateCardInput = Partial<CreateCardInput>
 
 export const CARD_TYPE_LABELS: Record<CardType, string> = {

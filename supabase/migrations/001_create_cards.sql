@@ -49,9 +49,23 @@ CREATE TRIGGER update_cards_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
--- Storage bucket for screenshots
--- Run these separately in Supabase dashboard or via SQL:
--- INSERT INTO storage.buckets (id, name, public) VALUES ('screenshots', 'screenshots', true);
+-- Storage bucket for screenshots (PRIVATE — images served via signed URLs)
+-- Create in Supabase dashboard: Storage → New Bucket → name "screenshots", UNCHECK "Public bucket"
+-- Or via SQL:
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('screenshots', 'screenshots', false);
+
+-- Storage RLS: allow anon to upload and create signed URLs
+CREATE POLICY "Allow anon upload" ON storage.objects
+  FOR INSERT TO anon
+  WITH CHECK (bucket_id = 'screenshots');
+
+CREATE POLICY "Allow anon select" ON storage.objects
+  FOR SELECT TO anon
+  USING (bucket_id = 'screenshots');
+
+CREATE POLICY "Allow anon delete" ON storage.objects
+  FOR DELETE TO anon
+  USING (bucket_id = 'screenshots');
 
 -- Row Level Security (RLS)
 ALTER TABLE cards ENABLE ROW LEVEL SECURITY;

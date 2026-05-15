@@ -30,20 +30,30 @@ function generateId(): string {
 }
 
 export const cardStore = {
-  getAll(): Card[] {
-    return readCards()
+  getAll(userId: string): Card[] {
+    return readCards().filter((c) => c.userId === userId)
   },
 
-  getById(id: string): Card | undefined {
-    return readCards().find((c) => c.id === id)
+  getById(id: string, userId: string): Card | undefined {
+    return readCards().find((c) => c.id === id && c.userId === userId)
   },
 
-  create(input: CreateCardInput): Card {
+  create(input: CreateCardInput & { userId: string }): Card {
     const cards = readCards()
     const now = new Date().toISOString()
     const card: Card = {
       id: generateId(),
-      ...input,
+      userId: input.userId,
+      title: input.title,
+      summary: input.summary,
+      type: input.type,
+      status: input.status,
+      tags: input.tags,
+      note: input.note,
+      imageUrl: input.imageUrl,
+      imagePath: input.imagePath,
+      ocrText: input.ocrText,
+      nextAction: input.nextAction,
       createdAt: now,
       updatedAt: now,
     }
@@ -52,14 +62,15 @@ export const cardStore = {
     return card
   },
 
-  update(id: string, input: UpdateCardInput): Card | undefined {
+  update(id: string, userId: string, input: UpdateCardInput): Card | undefined {
     const cards = readCards()
-    const idx = cards.findIndex((c) => c.id === id)
+    const idx = cards.findIndex((c) => c.id === id && c.userId === userId)
     if (idx === -1) return undefined
     cards[idx] = {
       ...cards[idx],
       ...input,
       id: cards[idx].id,
+      userId: cards[idx].userId,
       createdAt: cards[idx].createdAt,
       updatedAt: new Date().toISOString(),
     }
@@ -67,30 +78,23 @@ export const cardStore = {
     return cards[idx]
   },
 
-  delete(id: string): boolean {
+  delete(id: string, userId: string): boolean {
     const cards = readCards()
-    const filtered = cards.filter((c) => c.id !== id)
+    const filtered = cards.filter((c) => !(c.id === id && c.userId === userId))
     if (filtered.length === cards.length) return false
     writeCards(filtered)
     return true
   },
 
-  search(query: string): Card[] {
+  search(query: string, userId: string): Card[] {
     const q = query.toLowerCase()
     return readCards().filter(
       (c) =>
-        c.title.toLowerCase().includes(q) ||
-        c.summary.toLowerCase().includes(q) ||
-        c.tags.some((t) => t.toLowerCase().includes(q)) ||
-        c.ocrText.toLowerCase().includes(q)
+        c.userId === userId &&
+        (c.title.toLowerCase().includes(q) ||
+          c.summary.toLowerCase().includes(q) ||
+          c.tags.some((t) => t.toLowerCase().includes(q)) ||
+          c.ocrText.toLowerCase().includes(q))
     )
-  },
-
-  filterByStatus(status: Card["status"]): Card[] {
-    return readCards().filter((c) => c.status === status)
-  },
-
-  filterByType(type: Card["type"]): Card[] {
-    return readCards().filter((c) => c.type === type)
   },
 }

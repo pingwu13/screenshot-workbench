@@ -1,40 +1,45 @@
 import { NextRequest, NextResponse } from "next/server"
-import { cardStore } from "@/lib/data-store"
+import { getCardStore } from "@/lib/supabase-store"
+import { getCurrentUserId } from "@/lib/auth"
 
 export async function GET(req: NextRequest) {
+  const userId = await getCurrentUserId(req)
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   const { searchParams } = new URL(req.url)
   const status = searchParams.get("status")
   const type = searchParams.get("type")
   const query = searchParams.get("q")
 
-  let cards = cardStore.getAll()
+  try {
+    const store = getCardStore(userId)
+    let cards = query ? await store.search(query) : await store.getAll()
 
-  if (status) {
-    cards = cards.filter((c) => c.status === status)
-  }
-  if (type) {
-    cards = cards.filter((c) => c.type === type)
-  }
-  if (query) {
-    const q = query.toLowerCase()
-    cards = cards.filter(
-      (c) =>
-        c.title.toLowerCase().includes(q) ||
-        c.summary.toLowerCase().includes(q) ||
-        c.tags.some((t) => t.toLowerCase().includes(q))
-    )
-  }
+    if (status) cards = cards.filter((c) => c.status === status)
+    if (type) cards = cards.filter((c) => c.type === type)
 
-  cards.sort(
-    (a, b) =>
-      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-  )
-
-  return NextResponse.json(cards)
+    return NextResponse.json(cards)
+  } catch (err) {
+    console.error("Failed to fetch cards:", err)
+    return NextResponse.json({ error: "Failed to fetch cards" }, { status: 500 })
+  }
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json()
-  const card = cardStore.create(body)
-  return NextResponse.json(card, { status: 201 })
+  const userId = await getCurrentUserId(req)
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  try {
+    const body = await req.json()
+    const store = getCardStore(userId)
+    const card = await store.create(body)
+    return NextResponse.json(card, { status: 201 })
+  } catch (err) {
+    console.error("Failed to create card:", err)
+    return NextResponse.json({ error: "Failed to create card" }, { status: 500 })
+  }
 }
