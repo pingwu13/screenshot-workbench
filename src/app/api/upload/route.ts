@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { isSupabaseConfigured, createClient } from "@/lib/supabase"
-import { getCurrentUserId } from "@/lib/auth"
+import { isSupabaseConfigured } from "@/lib/supabase"
+import { getCurrentUserId, getToken, createAuthClient } from "@/lib/auth"
 import fs from "fs"
 import path from "path"
 
@@ -9,6 +9,8 @@ const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads")
 export async function POST(req: NextRequest) {
   const userId = await getCurrentUserId(req)
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+  const token = getToken(req)!
 
   const formData = await req.formData()
   const file = formData.get("file") as File | null
@@ -20,7 +22,7 @@ export async function POST(req: NextRequest) {
   const storagePath = `${userId}/${filename}`
 
   if (isSupabaseConfigured()) {
-    const supabase = createClient()
+    const supabase = createAuthClient(token)
     const { data, error } = await supabase.storage
       .from("screenshots")
       .upload(storagePath, buffer, { contentType: file.type || "image/png", upsert: false })
@@ -45,6 +47,8 @@ export async function DELETE(req: NextRequest) {
   const userId = await getCurrentUserId(req)
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
+  const token = getToken(req)!
+
   const { searchParams } = new URL(req.url)
   const storageKey = searchParams.get("key")
   if (!storageKey) return NextResponse.json({ error: "storageKey is required" }, { status: 400 })
@@ -52,7 +56,7 @@ export async function DELETE(req: NextRequest) {
   const storagePath = `${userId}/${storageKey}`
 
   if (isSupabaseConfigured()) {
-    const supabase = createClient()
+    const supabase = createAuthClient(token)
     const { error } = await supabase.storage.from("screenshots").remove([storagePath])
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   } else {

@@ -17,7 +17,11 @@ export default function BoardPage() {
     setCards(await res.json())
   }, [])
 
-  useEffect(() => { fetchCards() }, [fetchCards])
+  useEffect(() => {
+    fetchCards()
+    window.addEventListener("cards-updated", fetchCards)
+    return () => window.removeEventListener("cards-updated", fetchCards)
+  }, [fetchCards])
 
   return (
     <ProtectedPage>

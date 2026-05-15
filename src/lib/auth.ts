@@ -4,6 +4,17 @@ import { createClient } from "@supabase/supabase-js"
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
+export function getToken(req: NextRequest): string | null {
+  const authHeader = req.headers.get("authorization")
+  return authHeader?.startsWith("Bearer ") ? authHeader.slice("Bearer ".length) : null
+}
+
+export function createAuthClient(token: string) {
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  })
+}
+
 export async function getCurrentUserId(req: NextRequest): Promise<string | null> {
   try {
     const authHeader = req.headers.get("authorization")

@@ -43,7 +43,7 @@ export function Sidebar() {
     >
       <div className="flex items-center h-12 px-3 border-b">
         {!collapsed && (
-          <h1 className="font-semibold text-sm truncate">{t.app.title}</h1>
+          <h1 className="font-bold italic text-sm truncate">Give a Chance!</h1>
         )}
         <Button
           variant="ghost"

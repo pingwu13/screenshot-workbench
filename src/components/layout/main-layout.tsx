@@ -1,8 +1,12 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { Sidebar } from "@/components/layout/sidebar"
+import { UserSignature } from "@/components/layout/user-signature"
 import { LanguageSwitcher } from "@/components/layout/language-switcher"
+import { DailyCheckInButton } from "@/components/checkin/daily-checkin-button"
+import { CheckInCalendarDialog } from "@/components/checkin/checkin-calendar-dialog"
 import { useAuth } from "@/components/auth/auth-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Toaster } from "@/components/ui/sonner"
@@ -13,9 +17,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LogOut, Settings, User, UserRound } from "lucide-react"
+import { AppAppearanceLoader } from "@/components/layout/app-appearance-loader"
+import { LogOut, Settings, User, UserRound, CalendarCheck, Monitor } from "lucide-react"
 
-function UserMenu() {
+function UserMenu({ onOpenCalendar }: { onOpenCalendar: () => void }) {
   const { user, logout } = useAuth()
   if (!user) return null
 
@@ -48,6 +53,16 @@ function UserMenu() {
           <p className="text-xs text-muted-foreground truncate">{user.email}</p>
         </div>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onOpenCalendar} className="gap-2">
+          <CalendarCheck className="h-3.5 w-3.5" />
+          每日签到
+        </DropdownMenuItem>
+        <Link href="/settings/app">
+          <DropdownMenuItem className="gap-2">
+            <Monitor className="h-3.5 w-3.5" />
+            设置
+          </DropdownMenuItem>
+        </Link>
         <Link href="/settings/profile">
           <DropdownMenuItem className="gap-2">
             <Settings className="h-3.5 w-3.5" />
@@ -69,22 +84,30 @@ function UserMenu() {
 }
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
+  const [calendarOpen, setCalendarOpen] = useState(false)
+
   return (
     <TooltipProvider>
+      <AppAppearanceLoader>
       <div className="flex h-screen overflow-hidden">
         <Sidebar />
         <main className="flex-1 overflow-auto">
-          <div className="flex items-center justify-between h-12 px-4 border-b">
-            <div />
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between h-12 px-4 border-b gap-4">
+            <div className="flex-1 min-w-0 max-w-[min(38vw,520px)]">
+              <UserSignature />
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <DailyCheckInButton />
               <LanguageSwitcher />
-              <UserMenu />
+              <UserMenu onOpenCalendar={() => setCalendarOpen(true)} />
             </div>
           </div>
           <div className="p-6 max-w-[1600px] mx-auto w-full">{children}</div>
         </main>
       </div>
+      </AppAppearanceLoader>
       <Toaster />
+      <CheckInCalendarDialog open={calendarOpen} onOpenChange={setCalendarOpen} />
     </TooltipProvider>
   )
 }

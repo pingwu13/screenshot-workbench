@@ -6,9 +6,10 @@ import { useI18n } from "@/i18n/context"
 
 interface CardGridProps {
   cards: Card[]
+  from?: string
 }
 
-export function CardGrid({ cards }: CardGridProps) {
+export function CardGrid({ cards, from }: CardGridProps) {
   const { t } = useI18n()
 
   if (cards.length === 0) {
@@ -23,7 +24,7 @@ export function CardGrid({ cards }: CardGridProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {cards.map((card) => (
-        <CardItem key={card.id} card={card} />
+        <CardItem key={card.id} card={card} from={from} />
       ))}
     </div>
   )

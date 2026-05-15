@@ -1,52 +1,41 @@
 "use client"
 
 import { use, useCallback, useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Card } from "@/types/card"
-import { CARD_TYPE_LABELS, CARD_STATUS_LABELS } from "@/types/card"
+import { CARD_STATUS_LABELS } from "@/types/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { ProtectedPage } from "@/components/layout/protected-page"
 import { useI18n } from "@/i18n/context"
-import type { Dictionary } from "@/i18n/dictionaries"
 import { ArrowLeft, Pencil, Trash2, Calendar, Tag, Target } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { authFetch } from "@/lib/api-client"
-import { cn } from "@/lib/utils"
-import type { CardType, CardStatus } from "@/types/card"
-
-const TYPE_COLORS: Record<string, string> = {
-  learn: "bg-blue-100 text-blue-800 border-blue-200",
-  todo: "bg-orange-100 text-orange-800 border-orange-200",
-  reference: "bg-purple-100 text-purple-800 border-purple-200",
-  idea: "bg-green-100 text-green-800 border-green-200",
-}
-
-function getTypeLabel(t: Dictionary, type: CardType) {
-  return t.type[type] ?? CARD_TYPE_LABELS[type]
-}
-
-function getStatusLabel(t: Dictionary, status: CardStatus) {
-  return t.status[status] ?? CARD_STATUS_LABELS[status]
-}
+import { CARD_LABELS } from "@/data/card-labels"
 
 export default function CardDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const from = searchParams.get("from")
   const { t } = useI18n()
   const [card, setCard] = useState<Card | null>(null)
+  const [cardLabel, setCardLabel] = useState("")
   const [loading, setLoading] = useState(true)
+  const [savingLabel, setSavingLabel] = useState(false)
 
   const fetchCard = useCallback(async () => {
     try {
       const res = await authFetch(`/api/cards/${id}`)
       if (!res.ok) throw new Error("Not found")
-      setCard(await res.json())
+      const data = await res.json()
+      setCard(data)
+      setCardLabel(data.label || "")
     } catch {
       toast.error(t.card.notFound)
-      router.push("/")
+      router.back()
     } finally {
       setLoading(false)
     }
@@ -54,12 +43,28 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
 
   useEffect(() => { fetchCard() }, [fetchCard])
 
+  const handleLabelChange = async (newLabel: string) => {
+    if (!card) return
+    setSavingLabel(true)
+    try {
+      await authFetch(`/api/cards/${card.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ label: newLabel }),
+      })
+      setCardLabel(newLabel)
+      window.dispatchEvent(new Event("cards-updated"))
+      toast.success(newLabel ? `标签已设为「${newLabel}」` : "已清除标签")
+    } catch { toast.error("更新标签失败") }
+    finally { setSavingLabel(false) }
+  }
+
   const handleDelete = async () => {
     if (!confirm(t.card.confirmDelete)) return
     try {
       await authFetch(`/api/cards/${id}`, { method: "DELETE" })
       toast.success(t.card.deleted)
-      router.push("/")
+      router.back()
       router.refresh()
     } catch { toast.error(t.card.deleteFailed) }
   }
@@ -74,9 +79,13 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
   ) : (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <Link href="/library">
-          <Button variant="ghost" size="sm" className="gap-1"><ArrowLeft className="h-4 w-4" />{t.card.back}</Button>
-        </Link>
+        <Button variant="ghost" size="sm" className="gap-1" onClick={() => {
+          window.dispatchEvent(new Event("cards-updated"))
+          if (from === "inbox") router.replace("/inbox")
+          else if (from === "library") router.replace("/library")
+          else if (from === "board") router.replace("/board")
+          else router.replace("/")
+        }}><ArrowLeft className="h-4 w-4" />{t.card.back}</Button>
         <div className="flex gap-2">
           <Link href={`/cards/${card.id}/edit`}>
             <Button variant="outline" size="sm" className="gap-1"><Pencil className="h-3 w-3" />{t.card.edit}</Button>
@@ -87,17 +96,26 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
         </div>
       </div>
 
-      {card.imageUrl && (
-        <div className="rounded-lg overflow-hidden border">
-          <img src={card.imageUrl} alt={card.title} className="w-full max-h-96 object-contain bg-muted" />
+      {(card.images?.length > 0 || card.generatedImageUrl || card.imageUrl) && (
+        <div className="grid grid-cols-2 gap-2">
+          {card.images?.map((url, i) => (
+            <div key={i} className="rounded-lg overflow-hidden border">
+              <img src={url} alt={`${card.title} ${i + 1}`} className="w-full max-h-80 object-contain bg-muted" />
+            </div>
+          ))}
+          {(!card.images || card.images.length === 0) && (
+            <div className="rounded-lg overflow-hidden border">
+              <img src={card.generatedImageUrl || card.imageUrl} alt={card.title} className="w-full max-h-80 object-contain bg-muted" />
+            </div>
+          )}
         </div>
       )}
 
       <div className="space-y-3">
         <h1 className="text-xl font-bold">{card.title || t.card.unnamed}</h1>
         <div className="flex items-center gap-2 flex-wrap">
-          <Badge className={cn(TYPE_COLORS[card.type])}>{getTypeLabel(t, card.type)}</Badge>
-          <Badge variant="secondary">{getStatusLabel(t, card.status)}</Badge>
+          <Badge variant="secondary">{CARD_STATUS_LABELS[card.status]}</Badge>
+          {card.label ? <Badge>{card.label}</Badge> : null}
         </div>
         {card.summary && <p className="text-muted-foreground">{card.summary}</p>}
       </div>
@@ -111,6 +129,15 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
             <div className="flex gap-1 flex-wrap">{card.tags.map((tag) => <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>)}</div>
           </div>
         )}
+        <div className="space-y-1.5">
+          <p className="text-xs font-medium text-muted-foreground flex items-center gap-1"><Tag className="h-3 w-3" />标签</p>
+          <select value={cardLabel} onChange={(e) => handleLabelChange(e.target.value)}
+            disabled={savingLabel}
+            className="w-full h-8 rounded-md border border-input bg-background px-2.5 text-sm">
+            <option value="">未分类</option>
+            {CARD_LABELS.map((l) => <option key={l} value={l}>{l}</option>)}
+          </select>
+        </div>
         {card.nextAction && (
           <div className="space-y-1.5">
             <p className="text-xs font-medium text-muted-foreground flex items-center gap-1"><Target className="h-3 w-3" />{t.card.action}</p>

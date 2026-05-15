@@ -12,6 +12,7 @@ import type { CardType, CardStatus } from "@/types/card"
 
 interface CardItemProps {
   card: Card
+  from?: string
   className?: string
 }
 
@@ -30,38 +31,43 @@ function getStatusLabel(t: Dictionary, status: CardStatus) {
   return t.status[status]
 }
 
-export function CardItem({ card, className }: CardItemProps) {
+export function CardItem({ card, from, className }: CardItemProps) {
   const { t } = useI18n()
+
+  const href = from ? `/cards/${card.id}?from=${from}` : `/cards/${card.id}`
 
   return (
     <Link
-      href={`/cards/${card.id}`}
+      href={href}
       className={cn(
         "block p-4 rounded-lg border bg-card hover:shadow-md transition-shadow",
         className
       )}
     >
-      {card.imageUrl && (
+      {(card.images?.[0] || card.generatedImageUrl || card.imageUrl) && (
         <div className="mb-3 -mx-4 -mt-4 overflow-hidden rounded-t-lg">
           <img
-            src={card.imageUrl}
+            src={card.images?.[0] || card.generatedImageUrl || card.imageUrl}
             alt={card.title}
             className="w-full h-32 object-cover"
           />
+          {card.images && card.images.length > 1 && (
+            <span className="absolute top-2 right-2 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">{card.images.length}图</span>
+          )}
         </div>
       )}
 
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-medium text-sm leading-tight line-clamp-2">
+          <h3 className={cn(
+            "font-medium text-sm leading-tight line-clamp-2",
+            !(card.images?.[0] || card.generatedImageUrl || card.imageUrl) && "text-lg font-bold"
+          )}>
             {card.title || t.card.unnamed}
           </h3>
-          <Badge
-            variant="outline"
-            className={cn("shrink-0 text-xs", TYPE_COLORS[card.type])}
-          >
-            {getTypeLabel(t, card.type)}
-          </Badge>
+          {card.label ? (
+            <Badge variant="outline" className="shrink-0 text-xs">{card.label}</Badge>
+          ) : null}
         </div>
 
         {card.summary && (
@@ -103,9 +109,9 @@ export function CardItem({ card, className }: CardItemProps) {
 
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Calendar className="h-3 w-3" />
-          <span>
-            {new Date(card.createdAt).toLocaleDateString("zh-CN")}
-          </span>
+          <span>创建 {new Date(card.createdAt).toLocaleDateString("zh-CN")}</span>
+          <span className="mx-1 text-muted-foreground/40">·</span>
+          <span>更新 {new Date(card.updatedAt).toLocaleString("zh-CN")}</span>
         </div>
       </div>
     </Link>

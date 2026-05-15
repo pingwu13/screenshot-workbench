@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase"
 import { isSupabaseConfigured } from "@/lib/supabase"
+import type { SupabaseClient } from "@supabase/supabase-js"
 import type { Card, CreateCardInput, UpdateCardInput } from "@/types/card"
 
 export interface CardStore {
@@ -20,9 +21,12 @@ function toCard(row: Record<string, unknown>): Card {
     type: row.type as Card["type"],
     status: row.status as Card["status"],
     tags: row.tags as string[],
+    label: row.label as string,
     note: row.note as string,
     imageUrl: row.image_url as string,
     imagePath: row.image_path as string,
+    images: row.images as string[],
+    generatedImageUrl: row.generated_image_url as string,
     ocrText: row.ocr_text as string,
     nextAction: row.next_action as string,
     createdAt: row.created_at as string,
@@ -38,16 +42,19 @@ function toDb(input: UpdateCardInput & { userId?: string }): Record<string, unkn
   if (input.type !== undefined) db.type = input.type
   if (input.status !== undefined) db.status = input.status
   if (input.tags !== undefined) db.tags = input.tags
+  if (input.label !== undefined) db.label = input.label
   if (input.note !== undefined) db.note = input.note
   if (input.imageUrl !== undefined) db.image_url = input.imageUrl
   if (input.imagePath !== undefined) db.image_path = input.imagePath
+  if (input.images !== undefined) db.images = input.images
+  if (input.generatedImageUrl !== undefined) db.generated_image_url = input.generatedImageUrl
   if (input.ocrText !== undefined) db.ocr_text = input.ocrText
   if (input.nextAction !== undefined) db.next_action = input.nextAction
   return db
 }
 
-function createSupabaseStore(userId: string): CardStore {
-  const supabase = createClient()
+function createSupabaseStore(userId: string, authClient?: ReturnType<typeof createClient>): CardStore {
+  const supabase = authClient || createClient()
 
   return {
     async getAll(): Promise<Card[]> {
@@ -132,7 +139,12 @@ function createLocalFallbackStore(userId: string): CardStore {
 
 let _storeCache: { userId: string; store: CardStore } | null = null
 
-export function getCardStore(userId: string): CardStore {
+export function getCardStore(userId: string, token?: string): CardStore {
+  if (isSupabaseConfigured() && token) {
+    // Use authenticated client for RLS compliance — don't cache per-token
+    const { createAuthClient } = require("@/lib/auth")
+    return createSupabaseStore(userId, createAuthClient(token))
+  }
   if (_storeCache && _storeCache.userId === userId) return _storeCache.store
   const store = isSupabaseConfigured()
     ? createSupabaseStore(userId)

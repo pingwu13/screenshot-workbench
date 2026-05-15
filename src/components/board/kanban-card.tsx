@@ -47,7 +47,7 @@ export function KanbanCard({ card }: KanbanCardProps) {
     <Link
       ref={setNodeRef}
       style={style}
-      href={`/cards/${card.id}`}
+      href={`/cards/${card.id}?from=board`}
       className={cn(
         "block p-3 rounded-md border bg-card hover:shadow-sm transition-shadow",
         isDragging && "opacity-50 shadow-lg"

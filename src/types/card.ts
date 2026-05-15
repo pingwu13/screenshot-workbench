@@ -10,9 +10,12 @@ export interface Card {
   type: CardType
   status: CardStatus
   tags: string[]
+  label: string
   note: string
   imageUrl: string
   imagePath: string
+  images: string[]
+  generatedImageUrl: string
   ocrText: string
   nextAction: string
   createdAt: string

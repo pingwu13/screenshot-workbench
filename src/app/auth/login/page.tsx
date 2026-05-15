@@ -56,7 +56,7 @@ export default function LoginPage() {
   const handleVerifyOtp = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-    if (otpCode.length < 6) { setError("请输入完整验证码"); return }
+    if (otpCode.length < 8) { setError("请输入完整 8 位验证码"); return }
     setSubmitting(true)
     const r = await verifyOtp(email, otpCode, "signup")
     if (r.error) { setError(r.error); setSubmitting(false); return }
@@ -93,7 +93,7 @@ export default function LoginPage() {
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="otp">验证码</Label>
-              <Input id="otp" value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="输入 6 位验证码" maxLength={6} className="text-center text-lg tracking-widest" autoFocus />
+              <Input id="otp" value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 8))} placeholder="输入 8 位验证码" maxLength={8} className="text-center text-lg tracking-widest" autoFocus />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full" disabled={submitting}>{submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "验证"}</Button>
