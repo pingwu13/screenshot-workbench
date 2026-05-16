@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 import { Loader2, Settings, Palette, Type, Trash2, RotateCcw, ChevronUp, ChevronDown, Pencil, Tag } from "lucide-react"
 import { authFetch } from "@/lib/api-client"
-import { getCategoryColorClass, CATEGORY_COLORS } from "@/lib/category-colors"
+import { getCategoryColorClass, CATEGORY_COLOR_OPTIONS } from "@/lib/category-colors"
 import { cn } from "@/lib/utils"
 
 interface CatItem2 { id: string; name: string; color: string; sort_order: number }
@@ -97,7 +97,7 @@ function CategoryManagement() {
                   <>
                     <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-8 w-32" maxLength={20} />
                     <select value={editColor} onChange={(e) => setEditColor(e.target.value)} className="h-8 rounded border px-1 text-xs">
-                      {CATEGORY_COLORS.map((clr) => (<option key={clr} value={clr}>{clr}</option>))}
+                      {CATEGORY_COLOR_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
                     </select>
                     <Button size="sm" onClick={() => updateCat(c.id)}>保存</Button>
                     <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>取消</Button>
@@ -119,7 +119,7 @@ function CategoryManagement() {
         <div className="flex gap-2">
           <Input value={newCatName} onChange={(e) => setNewCatName(e.target.value)} placeholder="新分类名称" maxLength={20} className="h-8 w-40" />
           <select value={newCatColor} onChange={(e) => setNewCatColor(e.target.value)} className="h-8 rounded border px-1 text-xs">
-            {CATEGORY_COLORS.map((clr) => (<option key={clr} value={clr}>{clr}</option>))}
+            {CATEGORY_COLOR_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
           </select>
           <Button size="sm" onClick={addCat} disabled={adding}>{adding ? "..." : "新增分类"}</Button>
         </div>

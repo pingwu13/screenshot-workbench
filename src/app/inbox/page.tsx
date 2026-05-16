@@ -32,8 +32,8 @@ export default function InboxPage() {
   const fetchCards = useCallback(async () => {
     const res = await authFetch("/api/cards")
     const all = await res.json()
-    // Inbox = cards without a label
-    setCards((Array.isArray(all) ? all : []).filter((c: Card) => !c.category || !c.category.trim()))
+    // Inbox = cards with status "inbox"
+    setCards((Array.isArray(all) ? all : []).filter((c: Card) => c.status === "inbox"))
   }, [])
 
   useEffect(() => { loadCategories() }, [loadCategories])
@@ -60,13 +60,17 @@ export default function InboxPage() {
       const res = await authFetch("/api/cards/batch-classify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cardIds: Array.from(selected), label: pickedLabel }),
+        body: JSON.stringify({ cardIds: Array.from(selected), category: pickedLabel }),
       })
-      if (!res.ok) throw new Error("Failed")
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        console.error("[Inbox] classify failed:", res.status, err)
+        throw new Error(err.error || "Failed")
+      }
       const data = await res.json()
-      toast.success(`已将 ${data.updatedCount} 张卡片分类到「${pickedLabel}」`)
-      // Remove classified cards from local state immediately
-      setCards((prev) => prev.filter((c) => !selected.has(c.id)))
+      toast.success(`已将 ${data.updatedCount} 张卡片标记为「${pickedLabel}」分类`)
+      // Update local state with new category, keep cards in inbox
+      setCards((prev) => prev.map((c) => selected.has(c.id) ? { ...c, category: pickedLabel } : c))
       setTypeDialog(false)
       exitClassify()
       window.dispatchEvent(new Event("cards-updated"))

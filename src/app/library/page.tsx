@@ -21,8 +21,14 @@ export default function LibraryPage() {
   const [categories, setCategories] = useState<CatItem[]>([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState("")
-  const [selectedLabel, setSelectedLabel] = useState("")
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [selectedStatuses, setSelectedStatuses] = useState<CardStatus[]>([])
+
+  const toggleCategory = (name: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(name) ? prev.filter((x) => x !== name) : [...prev, name]
+    )
+  }
 
   const loadCategories = useCallback(async () => {
     try {
@@ -50,9 +56,14 @@ export default function LibraryPage() {
     return () => { window.removeEventListener("cards-updated", h); window.removeEventListener("categories-updated", h) }
   }, [fetchCards, loadCategories])
 
+  const UNCAT = "__uncategorized__"
   const filtered = cards.filter((c) => {
-    if (selectedLabel === "__unlabeled__" && c.category?.trim()) return false
-    if (selectedLabel && selectedLabel !== "__unlabeled__" && c.category?.trim() !== selectedLabel) return false
+    if (selectedCategories.length > 0) {
+      const cat = c.category?.trim() || ""
+      const matchCat = cat && selectedCategories.includes(cat)
+      const matchUncat = !cat && selectedCategories.includes(UNCAT)
+      if (!matchCat && !matchUncat) return false
+    }
     if (selectedStatuses.length > 0 && !selectedStatuses.includes(c.status)) return false
     return true
   })
@@ -72,12 +83,12 @@ export default function LibraryPage() {
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-1.5">分类</p>
             <div className="flex gap-1.5 flex-wrap">
-              <Badge variant={selectedLabel === "" ? "default" : "outline"} className="cursor-pointer" onClick={() => setSelectedLabel("")}>全部</Badge>
-              <Badge variant={selectedLabel === "__unlabeled__" ? "default" : "outline"} className="cursor-pointer" onClick={() => setSelectedLabel("__unlabeled__")}>未分类</Badge>
+              <Badge variant="outline" className={cn("cursor-pointer", selectedCategories.length === 0 ? "bg-black text-white border-black" : "")} onClick={() => setSelectedCategories([])}>全部</Badge>
+              <Badge variant="outline" className={cn("cursor-pointer", selectedCategories.includes(UNCAT) ? "bg-black text-white border-black" : "")} onClick={() => toggleCategory(UNCAT)}>未分类</Badge>
               {categories.map((c) => (
-                <Badge key={c.id} variant={selectedLabel === c.name ? "default" : "outline"}
-                  className={cn("cursor-pointer", getCategoryColorClass(c.color))}
-                  onClick={() => setSelectedLabel(c.name)}>{c.name}</Badge>
+                <Badge key={c.id} variant="outline"
+                  className={cn("cursor-pointer", selectedCategories.includes(c.name) ? "bg-black text-white border-black" : getCategoryColorClass(c.color))}
+                  onClick={() => toggleCategory(c.name)}>{c.name}</Badge>
               ))}
             </div>
           </div>

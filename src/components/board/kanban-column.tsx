@@ -15,12 +15,11 @@ interface KanbanColumnProps {
   cards: Card[]
 }
 
-const STATUS_COLORS: Record<CardStatus, string> = {
+const STATUS_COLORS: Record<string, string> = {
   inbox: "border-t-gray-400",
   planned: "border-t-blue-400",
   doing: "border-t-orange-400",
   done: "border-t-green-400",
-  archived: "border-t-slate-300",
 }
 
 export function KanbanColumn({ status, cards }: KanbanColumnProps) {

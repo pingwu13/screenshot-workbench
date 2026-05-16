@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { useAuth } from "@/components/auth/auth-provider"
 import { authFetch } from "@/lib/api-client"
-import { getCategoryColorClass, CATEGORY_COLORS } from "@/lib/category-colors"
+import { getCategoryColorClass, CATEGORY_COLORS, CATEGORY_COLOR_OPTIONS } from "@/lib/category-colors"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
@@ -122,13 +122,14 @@ export function CategorySelect({ value, onChange, showAdd = true }: CategorySele
             <div className="space-y-1.5">
               <Label>分类颜色</Label>
               <div className="grid grid-cols-6 gap-1.5">
-                {CATEGORY_COLORS.map((clr) => (
-                  <button key={clr} type="button" onClick={() => setNewColor(clr)}
+                {CATEGORY_COLOR_OPTIONS.map((opt) => (
+                  <button key={opt.value} type="button" onClick={() => setNewColor(opt.value)}
+                    title={opt.label}
                     className={cn(
                       "h-7 rounded-md border text-xs transition-colors",
-                      getCategoryColorClass(clr),
-                      newColor === clr && "ring-2 ring-black scale-110"
-                    )} />
+                      getCategoryColorClass(opt.value),
+                      newColor === opt.value && "ring-2 ring-black scale-110"
+                    )}>{opt.label}</button>
                 ))}
               </div>
             </div>

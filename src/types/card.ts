@@ -45,5 +45,4 @@ export const CARD_STATUS_ORDER: CardStatus[] = [
   "planned",
   "doing",
   "done",
-  "archived",
 ]

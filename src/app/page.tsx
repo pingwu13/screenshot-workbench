@@ -93,7 +93,8 @@ function HomePageContent() {
 
   const unfinishedTodos = cards.filter((c) => c.type === "todo" && ["planned", "doing"].includes(c.status))
   const inProgress = cards.filter((c) => c.status === "doing")
-  const pendingCards = cards.filter((c) => c.status === "inbox")
+  const inboxCards = cards.filter((c) => c.status === "inbox")
+  const pendingCards = inboxCards
 
   const listCards = listType === "inProgress" ? inProgress
     : listType === "pending" ? pendingCards
