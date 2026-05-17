@@ -27,13 +27,16 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("zh-CN")
 
   useEffect(() => {
-    setLocaleState(getInitialLocale())
+    const initial = getInitialLocale()
+    setLocaleState(initial)
+    document.documentElement.lang = initial
   }, [])
 
   const setLocale = useCallback((newLocale: Locale) => {
     setLocaleState(newLocale)
     localStorage.setItem("locale", newLocale)
     document.cookie = `locale=${newLocale};path=/;max-age=31536000;samesite=lax`
+    document.documentElement.lang = newLocale
   }, [])
 
   const t = getDictionary(locale)

@@ -10,7 +10,7 @@ import { getCategoryColorClass } from "@/lib/category-colors"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
+import { cn, CLICKABLE_CARD } from "@/lib/utils"
 import Link from "next/link"
 import { toast } from "sonner"
 import { ArrowLeft, Sparkles, Send, Lightbulb, ListChecks, ClipboardList, ArrowRight, FileText, Loader2, Check, Bookmark, Search, X } from "lucide-react"
@@ -396,7 +396,7 @@ function WorkbenchContent() {
                   ) : (
                     filteredCards.map((c) => (
                       <button key={c.id} onClick={() => selectCard(c.id)}
-                        className="w-full text-left p-2.5 rounded-lg border hover:bg-accent transition-colors">
+                        className={cn("w-full text-left p-2.5 rounded-lg border", CLICKABLE_CARD)}>
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">{c.title || "未命名"}</p>

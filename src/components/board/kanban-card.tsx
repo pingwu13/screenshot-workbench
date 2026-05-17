@@ -9,7 +9,7 @@ import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { GripVertical } from "lucide-react"
 import Link from "next/link"
-import { cn } from "@/lib/utils"
+import { cn, CLICKABLE_CARD } from "@/lib/utils"
 import type { CardType } from "@/types/card"
 
 interface KanbanCardProps {
@@ -49,7 +49,8 @@ export function KanbanCard({ card }: KanbanCardProps) {
       style={style}
       href={`/cards/${card.id}?from=board`}
       className={cn(
-        "block p-3 rounded-md border bg-card hover:shadow-sm transition-shadow",
+        "block p-3 rounded-md border bg-card",
+        !isDragging && CLICKABLE_CARD,
         isDragging && "opacity-50 shadow-lg"
       )}
     >

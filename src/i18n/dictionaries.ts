@@ -8,17 +8,50 @@ export const locales: { value: Locale; label: string }[] = [
 
 export interface Dictionary {
   app: { title: string }
-  nav: { home: string; inbox: string; board: string; library: string; newCard: string }
+  nav: { home: string; inbox: string; board: string; library: string; newCard: string; settings: string }
+  tooltips: { dailyCheckin: string; switchLanguage: string; announcements: string; settings: string }
+  common: {
+    loading: string; cancel: string; confirm: string; save: string; delete: string
+    back: string; search: string; close: string; unnamed: string; uncategorized: string
+    create: string; update: string; processing: string; noSelection: string
+  }
   home: {
     greeting: string; subtitle: string; inProgress: string; pending: string
     total: string; unfinishedTodos: string; boardView: string
     noUnfinished: string; createCard: string; organizeInbox: string; browseLibrary: string
+    quickNotePlaceholder: string; quickNoteSuccess: string
+    quickNoteError: string; quickNoteMaxLength: string
+    statsOverview: string; inProgressDesc: string; pendingDesc: string; totalCardsDesc: string
+    todayFocus: string; noFocus: string; noFocusHint: string; goWorkbench: string
+    goWorkbenchHint: string; viewInbox: string
+    inboxPreview: string; viewAll: string; inboxEmpty: string; inboxEmptyHint: string
+    inboxCount: string; doingSection: string
+    quickActions: string
   }
-  inbox: { title: string; subtitle: string }
+  inbox: {
+    title: string; subtitle: string
+    prev: string; next: string; pageInfo: string
+    processing: string; categorize: string; batchDelete: string
+    cancelBatch: string; selected: string; selectAll: string; deselectAll: string
+    categorizeDialogTitle: string; categorizeDialogDesc: string; confirmCategorize: string
+    deleteDialogTitle: string; deleteDialogDesc: string; confirmDelete: string
+    categorizeSuccess: string; categorizeFailed: string; deleteSuccess: string; deleteFailed: string
+  }
   board: { title: string; subtitle: string }
   library: {
     title: string; subtitle: string; searchPlaceholder: string
     loading: string; filterByType: string; filterByStatus: string
+  }
+  creative: {
+    title: string; subtitle: string; newEntry: string; editEntry: string
+    shortcuts: string; noShortcuts: string; noShortcutsHint: string
+    recommended: string; addToCreative: string; open: string; launch: string
+    miniGames: string; saveFailed: string; saved: string; updated: string
+    deleteConfirm: string; deleteFailed: string; deleted: string
+    name: string; namePlaceholder: string; description: string; descPlaceholder: string
+    type: string; url: string; urlPlaceholder: string
+    types: { website: string; software: string; tool: string; document: string; other: string }
+    games: { gomoku: { name: string; desc: string }; tetris: { name: string; desc: string } }
   }
   card: {
     unnamed: string; newTitle: string; newSubtitle: string; editTitle: string
@@ -32,6 +65,15 @@ export interface Dictionary {
     processFailed: string; ocrResult: string; tagPlaceholder: string
     addTag: string; create: string; update: string; cancel: string
     saving: string; uploadHint: string
+    workbench: string; properties: string; content: string; originalContent: string
+    emptySummary: string; emptyContent: string; emptyContentHint: string
+    aiPlan: string; unnamedPlan: string; noAiPlan: string; goWorkbench: string
+    planDetail: string; deletePlanConfirm: string; planDeleted: string; deletePlan: string
+    setNextAction: string; nextActionSet: string; actionFailed: string
+    statusUpdated: string; statusUpdateFailed: string
+    categorySet: string; categoryCleared: string; categoryUpdateFailed: string
+    startAction: string; startActionToast: string
+    backLabels: { inbox: string; library: string; board: string; home: string; workbench: string; cards: string }
   }
   upload: {
     click: string; drag: string; paste: string; formats: string
@@ -42,9 +84,36 @@ export interface Dictionary {
     inbox: string; planned: string; doing: string; done: string; archived: string
   }
   type: { learn: string; todo: string; reference: string; idea: string }
+  workbench: {
+    title: string; subtitle: string; backToCard: string; loadingCard: string
+    cardNotFound: string; cardLibrary: string; searchPlaceholder: string
+    allTypes: string; allStatuses: string; noMatch: string
+    originalContent: string; created: string; updated: string; openDetail: string
+    backLabels: { board: string; inbox: string; library: string; home: string; cards: string }
+    aiSettings: string; noApiKey: string; goConfig: string
+    chatEmptyTitle: string; chatEmptySubtitle: string; chatEmptyTitleGeneral: string; chatEmptySubtitleGeneral: string
+    loadingChat: string; thinking: string; thinkingSub: string; seconds: string
+    saved: string; savePlan: string; saveNextAction: string
+    planSaved: string; viewDetail: string; saveFailed: string
+    nextActionSaved: string
+    inputPlaceholder: string; inputPlaceholderGeneral: string
+    firstToken: string; totalTime: string
+    thinkingElapsed: string
+    quickActions: {
+      understand: string; breakDown: string; makePlan: string; nextStep: string
+      clarifyIdea: string; studyPlan: string; breakTask: string; giveAdvice: string
+    }
+  }
+  settings: {
+    appearance: string; profile: string
+    theme: string; font: string
+    themes: { light: string; black: string; grass: string; brown: string }
+    fonts: { yahei: string; songti: string; kaiti: string; fzxiaobiaosong: string }
+  }
   moveFailed: string
   noCards: string
   noCardsHint: string
+  checkinButton: string; checkinDone: string
 }
 
 export const zhCN = {
@@ -55,23 +124,87 @@ export const zhCN = {
     board: "看板",
     library: "资料库",
     newCard: "新建卡片",
+    settings: "设置",
+  },
+  tooltips: {
+    dailyCheckin: "每日打卡",
+    switchLanguage: "切换语言",
+    announcements: "公告",
+    settings: "个人设置",
+  },
+  common: {
+    loading: "加载中...",
+    cancel: "取消",
+    confirm: "确认",
+    save: "保存",
+    delete: "删除",
+    back: "返回",
+    search: "搜索",
+    close: "关闭",
+    unnamed: "未命名",
+    uncategorized: "未分类",
+    create: "创建",
+    update: "更新",
+    processing: "处理中...",
+    noSelection: "请先选择卡片",
   },
   home: {
     greeting: "你好",
-    subtitle: "看看今天需要做什么",
+    subtitle: "看看今天需要推进什么",
     inProgress: "进行中",
-    pending: "待整理",
+    pending: "待处理",
     total: "全部卡片",
     unfinishedTodos: "想做但未完成",
     boardView: "看板视图",
     noUnfinished: "没有进行中的待办事项",
-    createCard: "创建新卡片",
+    createCard: "新建卡片",
     organizeInbox: "整理收集箱",
     browseLibrary: "浏览资料库",
+    quickNotePlaceholder: "想到什么就写什么...",
+    quickNoteSuccess: "已加入收集箱",
+    quickNoteError: "添加失败，请重试",
+    quickNoteMaxLength: "灵感速记最多 80 字",
+    statsOverview: "统计概览",
+    inProgressDesc: "正在推进的任务",
+    pendingDesc: "还在收集箱中的 idea",
+    totalCardsDesc: "累计收集内容",
+    todayFocus: "今日重点",
+    noFocus: "暂无重点任务",
+    noFocusHint: "从收集箱挑选一个 idea 开始处理",
+    goWorkbench: "进入工作台",
+    goWorkbenchHint: "进入工作台生成处理方案",
+    viewInbox: "查看收集箱",
+    inboxPreview: "待处理收集箱",
+    viewAll: "全部",
+    inboxEmpty: "收集箱为空",
+    inboxEmptyHint: "所有 idea 都已分类处理",
+    inboxCount: "还有 {n} 张卡片在收集箱",
+    doingSection: "进行中",
+    quickActions: "快捷操作",
   },
   inbox: {
     title: "收集箱",
     subtitle: "待分类整理的卡片",
+    prev: "上一页",
+    next: "下一页",
+    pageInfo: "{page} / {totalPages} · 共 {totalCards} 张",
+    processing: "处理中...",
+    categorize: "分类",
+    batchDelete: "批量删除",
+    cancelBatch: "取消",
+    selected: "已选择",
+    selectAll: "全选当前页",
+    deselectAll: "取消全选",
+    categorizeDialogTitle: "选择分类标签",
+    categorizeDialogDesc: "将 {n} 张卡片分类到：",
+    confirmCategorize: "确认分类",
+    deleteDialogTitle: "确认删除选中的卡片？",
+    deleteDialogDesc: "将删除已选中的 {n} 张卡片。此操作不可恢复。",
+    confirmDelete: "确认删除",
+    categorizeSuccess: "已将 {n} 张卡片标记为「{label}」分类",
+    categorizeFailed: "分类失败",
+    deleteSuccess: "已删除 {n} 张卡片",
+    deleteFailed: "批量删除失败",
   },
   board: {
     title: "看板",
@@ -84,6 +217,38 @@ export const zhCN = {
     loading: "加载中...",
     filterByType: "分类",
     filterByStatus: "状态",
+  },
+  creative: {
+    title: "创意栏",
+    subtitle: "收纳你的快捷入口、灵感工具和小游戏。",
+    newEntry: "新增入口",
+    editEntry: "编辑入口",
+    shortcuts: "快捷入口",
+    noShortcuts: "还没有快捷入口",
+    noShortcutsHint: "点击右上角「新增入口」或从下方推荐添加",
+    recommended: "推荐入口：",
+    addToCreative: "添加到我的创意栏",
+    open: "打开",
+    launch: "启动",
+    miniGames: "小游戏",
+    saveFailed: "保存失败",
+    saved: "已添加",
+    updated: "已更新",
+    deleteConfirm: "确定删除这个入口吗？",
+    deleteFailed: "删除失败",
+    deleted: "已删除",
+    name: "名称",
+    namePlaceholder: "例如：DeepSeek",
+    description: "描述",
+    descPlaceholder: "简短说明",
+    type: "类型",
+    url: "URL（可选）",
+    urlPlaceholder: "https://...",
+    types: { website: "网站", software: "软件", tool: "工具", document: "文档", other: "其他" },
+    games: {
+      gomoku: { name: "五子棋", desc: "经典双人对弈" },
+      tetris: { name: "俄罗斯方块", desc: "经典益智游戏" },
+    },
   },
   card: {
     unnamed: "未命名卡片",
@@ -127,6 +292,39 @@ export const zhCN = {
     cancel: "取消",
     saving: "保存中...",
     uploadHint: "截图已上传，点击「OCR + AI 识别」自动提取信息",
+    workbench: "工作台",
+    properties: "卡片属性",
+    content: "内容",
+    originalContent: "原始内容",
+    emptySummary: "暂无简介，点击右上角「编辑」补充内容",
+    emptyContent: "暂无正文内容",
+    emptyContentHint: "点击右上角「编辑」补充内容",
+    aiPlan: "AI 处理方案",
+    unnamedPlan: "未命名方案",
+    noAiPlan: "还没有 AI 处理方案",
+    goWorkbench: "进入工作台",
+    planDetail: "方案详情",
+    deletePlanConfirm: "确定删除这个 AI 方案吗？删除后不可恢复。",
+    planDeleted: "方案已删除",
+    deletePlan: "删除方案",
+    setNextAction: "设为下一步行动",
+    nextActionSet: "已设为下一步行动",
+    actionFailed: "操作失败",
+    statusUpdated: "状态已更新",
+    statusUpdateFailed: "更新状态失败",
+    categorySet: "分类已设为「{v}」",
+    categoryCleared: "已清除分类",
+    categoryUpdateFailed: "更新分类失败",
+    startAction: "开始：{action}",
+    startActionToast: "已开始处理，进入进行中状态",
+    backLabels: {
+      inbox: "返回收集箱",
+      library: "返回资料库",
+      board: "返回看板",
+      home: "返回首页",
+      workbench: "返回工作台",
+      cards: "返回卡片列表",
+    },
   },
   upload: {
     click: "点击上传",
@@ -136,9 +334,7 @@ export const zhCN = {
     reupload: "点击重新上传",
     uploading: "上传中...",
   },
-  boardColumn: {
-    dragHere: "拖拽卡片到此处",
-  },
+  boardColumn: { dragHere: "拖拽卡片到此处" },
   status: {
     inbox: "收集箱",
     planned: "计划中",
@@ -146,15 +342,76 @@ export const zhCN = {
     done: "已完成",
     archived: "已归档",
   },
-  type: {
-    learn: "想学",
-    todo: "想做",
-    reference: "资料",
-    idea: "灵感",
+  type: { learn: "想学", todo: "想做", reference: "资料", idea: "灵感" },
+  workbench: {
+    title: "工作台",
+    subtitle: "让 AI 帮你把 idea 变成可执行方案",
+    backToCard: "返回卡片详情",
+    loadingCard: "加载卡片...",
+    cardNotFound: "卡片不存在",
+    cardLibrary: "卡片库",
+    searchPlaceholder: "搜索标题或内容...",
+    allTypes: "全部分类",
+    allStatuses: "全部状态",
+    noMatch: "暂无匹配卡片",
+    originalContent: "原始内容",
+    created: "创建：",
+    updated: "更新：",
+    openDetail: "打开完整详情页",
+    backLabels: {
+      board: "返回看板",
+      inbox: "返回收集箱",
+      library: "返回资料库",
+      home: "返回首页",
+      cards: "返回卡片列表",
+    },
+    aiSettings: "AI 设置",
+    noApiKey: "尚未配置 AI API Key",
+    goConfig: "去配置",
+    chatEmptyTitle: "AI 对话窗口",
+    chatEmptySubtitle: "基于当前卡片，点击快捷按钮或输入问题",
+    chatEmptyTitleGeneral: "通用 AI 问答",
+    chatEmptySubtitleGeneral: "直接输入问题，或点击快捷按钮开始",
+    loadingChat: "加载对话记录...",
+    thinking: "正在思考",
+    thinkingSub: "AI 正在整理回答…",
+    seconds: "秒",
+    saved: "已保存",
+    savePlan: "保存为方案",
+    saveNextAction: "保存为下一步行动",
+    planSaved: "已保存为新方案，可在卡片详情页查看",
+    viewDetail: "查看详情",
+    saveFailed: "保存失败",
+    nextActionSaved: "已保存为下一步行动",
+    inputPlaceholder: "输入消息，AI 帮你分析...",
+    inputPlaceholderGeneral: "输入消息...",
+    firstToken: "首字",
+    totalTime: "总耗时",
+    thinkingElapsed: "{n} 秒",
+    quickActions: {
+      understand: "帮我理解这个任务",
+      breakDown: "拆解执行步骤",
+      makePlan: "给我一个处理方案",
+      nextStep: "生成下一步行动（≤30字）",
+      clarifyIdea: "帮我梳理一个想法",
+      studyPlan: "帮我制定学习计划",
+      breakTask: "帮我拆解一个任务",
+      giveAdvice: "给我一些建议",
+    },
+  },
+  settings: {
+    appearance: "外观设置",
+    profile: "个人设置",
+    theme: "主题",
+    font: "字体",
+    themes: { light: "浅色", black: "暗黑", grass: "草绿", brown: "暖棕" },
+    fonts: { yahei: "微软雅黑", songti: "宋体", kaiti: "楷体", fzxiaobiaosong: "方正小标宋" },
   },
   moveFailed: "移动失败",
   noCards: "暂无卡片",
   noCardsHint: "上传截图或创建新卡片开始整理",
+  checkinButton: "每日打卡",
+  checkinDone: "已打卡",
 } as const
 
 export const en: Dictionary = {
@@ -165,6 +422,29 @@ export const en: Dictionary = {
     board: "Board",
     library: "Library",
     newCard: "New Card",
+    settings: "Settings",
+  },
+  tooltips: {
+    dailyCheckin: "Daily Check-in",
+    switchLanguage: "Switch Language",
+    announcements: "Announcements",
+    settings: "Settings",
+  },
+  common: {
+    loading: "Loading...",
+    cancel: "Cancel",
+    confirm: "Confirm",
+    save: "Save",
+    delete: "Delete",
+    back: "Back",
+    search: "Search",
+    close: "Close",
+    unnamed: "Untitled",
+    uncategorized: "Uncategorized",
+    create: "Create",
+    update: "Update",
+    processing: "Processing...",
+    noSelection: "Please select cards first",
   },
   home: {
     greeting: "Hello",
@@ -175,13 +455,54 @@ export const en: Dictionary = {
     unfinishedTodos: "Unfinished Todos",
     boardView: "Board View",
     noUnfinished: "No todos in progress",
-    createCard: "Create Card",
+    createCard: "New Card",
     organizeInbox: "Organize Inbox",
     browseLibrary: "Browse Library",
+    quickNotePlaceholder: "What's on your mind...",
+    quickNoteSuccess: "Added to inbox",
+    quickNoteError: "Failed to add, please try again",
+    quickNoteMaxLength: "Quick note max 80 characters",
+    statsOverview: "Overview",
+    inProgressDesc: "Tasks in progress",
+    pendingDesc: "Ideas in inbox",
+    totalCardsDesc: "Total collected",
+    todayFocus: "Today's Focus",
+    noFocus: "No focus tasks",
+    noFocusHint: "Pick an idea from inbox to start",
+    goWorkbench: "Open Workbench",
+    goWorkbenchHint: "Open workbench to generate a plan",
+    viewInbox: "View Inbox",
+    inboxPreview: "Pending Inbox",
+    viewAll: "All",
+    inboxEmpty: "Inbox is empty",
+    inboxEmptyHint: "All ideas have been organized",
+    inboxCount: "{n} cards in inbox",
+    doingSection: "In Progress",
+    quickActions: "Quick Actions",
   },
   inbox: {
     title: "Inbox",
     subtitle: "Cards to be organized",
+    prev: "Previous",
+    next: "Next",
+    pageInfo: "{page} / {totalPages} · {totalCards} cards",
+    processing: "Processing...",
+    categorize: "Categorize",
+    batchDelete: "Batch Delete",
+    cancelBatch: "Cancel",
+    selected: "Selected",
+    selectAll: "Select All",
+    deselectAll: "Deselect All",
+    categorizeDialogTitle: "Choose Category",
+    categorizeDialogDesc: "Categorize {n} cards as:",
+    confirmCategorize: "Confirm",
+    deleteDialogTitle: "Delete selected cards?",
+    deleteDialogDesc: "This will delete {n} selected cards. This action cannot be undone.",
+    confirmDelete: "Delete",
+    categorizeSuccess: "Categorized {n} cards as \"{label}\"",
+    categorizeFailed: "Categorization failed",
+    deleteSuccess: "Deleted {n} cards",
+    deleteFailed: "Batch delete failed",
   },
   board: {
     title: "Board",
@@ -194,6 +515,38 @@ export const en: Dictionary = {
     loading: "Loading...",
     filterByType: "Type",
     filterByStatus: "Status",
+  },
+  creative: {
+    title: "Creative Corner",
+    subtitle: "Your shortcuts, inspiration tools, and mini games.",
+    newEntry: "Add Entry",
+    editEntry: "Edit Entry",
+    shortcuts: "Shortcuts",
+    noShortcuts: "No shortcuts yet",
+    noShortcutsHint: "Click \"Add Entry\" or pick from recommendations below",
+    recommended: "Recommended:",
+    addToCreative: "Add to My Creative Corner",
+    open: "Open",
+    launch: "Launch",
+    miniGames: "Mini Games",
+    saveFailed: "Save failed",
+    saved: "Added",
+    updated: "Updated",
+    deleteConfirm: "Delete this entry?",
+    deleteFailed: "Delete failed",
+    deleted: "Deleted",
+    name: "Name",
+    namePlaceholder: "e.g. DeepSeek",
+    description: "Description",
+    descPlaceholder: "Short description",
+    type: "Type",
+    url: "URL (optional)",
+    urlPlaceholder: "https://...",
+    types: { website: "Website", software: "Software", tool: "Tool", document: "Document", other: "Other" },
+    games: {
+      gomoku: { name: "Gomoku", desc: "Classic two-player board game" },
+      tetris: { name: "Tetris", desc: "Classic puzzle game" },
+    },
   },
   card: {
     unnamed: "Untitled Card",
@@ -237,6 +590,39 @@ export const en: Dictionary = {
     cancel: "Cancel",
     saving: "Saving...",
     uploadHint: "Screenshot uploaded, click 'OCR + AI Analyze' to extract info",
+    workbench: "Workbench",
+    properties: "Properties",
+    content: "Content",
+    originalContent: "Original Content",
+    emptySummary: "No summary yet. Click \"Edit\" to add content.",
+    emptyContent: "No content yet",
+    emptyContentHint: "Click \"Edit\" to add content",
+    aiPlan: "AI Plan",
+    unnamedPlan: "Untitled Plan",
+    noAiPlan: "No AI plan yet",
+    goWorkbench: "Open Workbench",
+    planDetail: "Plan Details",
+    deletePlanConfirm: "Delete this AI plan? This cannot be undone.",
+    planDeleted: "Plan deleted",
+    deletePlan: "Delete Plan",
+    setNextAction: "Set as Next Action",
+    nextActionSet: "Set as next action",
+    actionFailed: "Action failed",
+    statusUpdated: "Status updated",
+    statusUpdateFailed: "Status update failed",
+    categorySet: "Category set to \"{v}\"",
+    categoryCleared: "Category cleared",
+    categoryUpdateFailed: "Category update failed",
+    startAction: "Start: {action}",
+    startActionToast: "Started processing, moved to In Progress",
+    backLabels: {
+      inbox: "Back to Inbox",
+      library: "Back to Library",
+      board: "Back to Board",
+      home: "Back to Home",
+      workbench: "Back to Workbench",
+      cards: "Back to Cards",
+    },
   },
   upload: {
     click: "Click to Upload",
@@ -246,9 +632,7 @@ export const en: Dictionary = {
     reupload: "Click to Re-upload",
     uploading: "Uploading...",
   },
-  boardColumn: {
-    dragHere: "Drag cards here",
-  },
+  boardColumn: { dragHere: "Drag cards here" },
   status: {
     inbox: "Inbox",
     planned: "Planned",
@@ -256,15 +640,76 @@ export const en: Dictionary = {
     done: "Done",
     archived: "Archived",
   },
-  type: {
-    learn: "Learn",
-    todo: "Todo",
-    reference: "Reference",
-    idea: "Idea",
+  type: { learn: "Learn", todo: "Todo", reference: "Reference", idea: "Idea" },
+  workbench: {
+    title: "Workbench",
+    subtitle: "Let AI turn your ideas into actionable plans",
+    backToCard: "Back to Card",
+    loadingCard: "Loading card...",
+    cardNotFound: "Card not found",
+    cardLibrary: "Card Library",
+    searchPlaceholder: "Search title or content...",
+    allTypes: "All Types",
+    allStatuses: "All Statuses",
+    noMatch: "No matching cards",
+    originalContent: "Original Content",
+    created: "Created: ",
+    updated: "Updated: ",
+    openDetail: "Open Full Details",
+    backLabels: {
+      board: "Back to Board",
+      inbox: "Back to Inbox",
+      library: "Back to Library",
+      home: "Back to Home",
+      cards: "Back to Cards",
+    },
+    aiSettings: "AI Settings",
+    noApiKey: "AI API key not configured",
+    goConfig: "Configure",
+    chatEmptyTitle: "AI Chat",
+    chatEmptySubtitle: "Based on the current card, click a quick action or type a question",
+    chatEmptyTitleGeneral: "General AI Chat",
+    chatEmptySubtitleGeneral: "Type a question or click a quick action to start",
+    loadingChat: "Loading chat history...",
+    thinking: "Thinking",
+    thinkingSub: "AI is composing a response...",
+    seconds: "s",
+    saved: "Saved",
+    savePlan: "Save as Plan",
+    saveNextAction: "Save as Next Action",
+    planSaved: "Plan saved. View in card details.",
+    viewDetail: "View Details",
+    saveFailed: "Save failed",
+    nextActionSaved: "Next action saved",
+    inputPlaceholder: "Type a message, AI will analyze...",
+    inputPlaceholderGeneral: "Type a message...",
+    firstToken: "First token",
+    totalTime: "Total",
+    thinkingElapsed: "{n}s",
+    quickActions: {
+      understand: "Help me understand this task",
+      breakDown: "Break down execution steps",
+      makePlan: "Give me an action plan",
+      nextStep: "Generate next action (≤30 chars)",
+      clarifyIdea: "Help me clarify an idea",
+      studyPlan: "Help me make a study plan",
+      breakTask: "Help me break down a task",
+      giveAdvice: "Give me some advice",
+    },
+  },
+  settings: {
+    appearance: "Appearance",
+    profile: "Profile",
+    theme: "Theme",
+    font: "Font",
+    themes: { light: "Light", black: "Dark", grass: "Grass", brown: "Brown" },
+    fonts: { yahei: "YaHei", songti: "Songti", kaiti: "Kaiti", fzxiaobiaosong: "XiaoBiaoSong" },
   },
   moveFailed: "Move failed",
   noCards: "No cards yet",
   noCardsHint: "Upload a screenshot or create a new card",
+  checkinButton: "Check-in",
+  checkinDone: "Checked In",
 } as const
 
 export const ja: Dictionary = {
@@ -275,6 +720,29 @@ export const ja: Dictionary = {
     board: "ボード",
     library: "ライブラリ",
     newCard: "新規カード",
+    settings: "設定",
+  },
+  tooltips: {
+    dailyCheckin: "デイリーチェックイン",
+    switchLanguage: "言語切替",
+    announcements: "お知らせ",
+    settings: "設定",
+  },
+  common: {
+    loading: "読み込み中...",
+    cancel: "キャンセル",
+    confirm: "確認",
+    save: "保存",
+    delete: "削除",
+    back: "戻る",
+    search: "検索",
+    close: "閉じる",
+    unnamed: "無題",
+    uncategorized: "未分類",
+    create: "作成",
+    update: "更新",
+    processing: "処理中...",
+    noSelection: "カードを選択してください",
   },
   home: {
     greeting: "こんにちは",
@@ -288,10 +756,51 @@ export const ja: Dictionary = {
     createCard: "カードを作成",
     organizeInbox: "受信箱を整理",
     browseLibrary: "ライブラリを閲覧",
+    quickNotePlaceholder: "思いついたことを書いてみよう...",
+    quickNoteSuccess: "受信箱に追加しました",
+    quickNoteError: "追加に失敗しました",
+    quickNoteMaxLength: "クイックノートは80文字まで",
+    statsOverview: "統計概要",
+    inProgressDesc: "進行中のタスク",
+    pendingDesc: "受信箱のアイデア",
+    totalCardsDesc: "累計収集",
+    todayFocus: "今日の重点",
+    noFocus: "重点タスクなし",
+    noFocusHint: "受信箱からアイデアを選んで始めましょう",
+    goWorkbench: "ワークベンチへ",
+    goWorkbenchHint: "ワークベンチで処理プランを作成",
+    viewInbox: "受信箱を見る",
+    inboxPreview: "未処理の受信箱",
+    viewAll: "すべて",
+    inboxEmpty: "受信箱は空です",
+    inboxEmptyHint: "すべてのアイデアが整理されました",
+    inboxCount: "受信箱に{n}枚のカード",
+    doingSection: "進行中",
+    quickActions: "クイック操作",
   },
   inbox: {
     title: "受信箱",
     subtitle: "整理待ちのカード",
+    prev: "前へ",
+    next: "次へ",
+    pageInfo: "{page} / {totalPages} · 全{totalCards}枚",
+    processing: "処理中...",
+    categorize: "分類",
+    batchDelete: "一括削除",
+    cancelBatch: "キャンセル",
+    selected: "選択中",
+    selectAll: "全ページ選択",
+    deselectAll: "選択解除",
+    categorizeDialogTitle: "分類ラベルを選択",
+    categorizeDialogDesc: "{n}枚のカードを分類：",
+    confirmCategorize: "分類確定",
+    deleteDialogTitle: "選択したカードを削除しますか？",
+    deleteDialogDesc: "選択した{n}枚のカードを削除します。この操作は取り消せません。",
+    confirmDelete: "削除確定",
+    categorizeSuccess: "{n}枚のカードを「{label}」に分類しました",
+    categorizeFailed: "分類に失敗しました",
+    deleteSuccess: "{n}枚のカードを削除しました",
+    deleteFailed: "一括削除に失敗しました",
   },
   board: {
     title: "ボード",
@@ -304,6 +813,38 @@ export const ja: Dictionary = {
     loading: "読み込み中...",
     filterByType: "種類",
     filterByStatus: "ステータス",
+  },
+  creative: {
+    title: "クリエイティブ",
+    subtitle: "ショートカット、インスピレーションツール、ミニゲーム。",
+    newEntry: "新規登録",
+    editEntry: "編集",
+    shortcuts: "ショートカット",
+    noShortcuts: "まだショートカットがありません",
+    noShortcutsHint: "右上の「新規登録」をクリックするか、下のおすすめから追加",
+    recommended: "おすすめ：",
+    addToCreative: "マイクリエイティブに追加",
+    open: "開く",
+    launch: "起動",
+    miniGames: "ミニゲーム",
+    saveFailed: "保存に失敗しました",
+    saved: "追加しました",
+    updated: "更新しました",
+    deleteConfirm: "このエントリーを削除しますか？",
+    deleteFailed: "削除に失敗しました",
+    deleted: "削除しました",
+    name: "名前",
+    namePlaceholder: "例：DeepSeek",
+    description: "説明",
+    descPlaceholder: "簡単な説明",
+    type: "種類",
+    url: "URL（任意）",
+    urlPlaceholder: "https://...",
+    types: { website: "ウェブサイト", software: "ソフトウェア", tool: "ツール", document: "ドキュメント", other: "その他" },
+    games: {
+      gomoku: { name: "五目並べ", desc: "クラシック対戦ゲーム" },
+      tetris: { name: "テトリス", desc: "クラシックパズルゲーム" },
+    },
   },
   card: {
     unnamed: "無題のカード",
@@ -347,6 +888,39 @@ export const ja: Dictionary = {
     cancel: "キャンセル",
     saving: "保存中...",
     uploadHint: "スクリーンショットがアップロードされました。「OCR + AI 分析」をクリックして情報を抽出",
+    workbench: "ワークベンチ",
+    properties: "カード属性",
+    content: "内容",
+    originalContent: "元の内容",
+    emptySummary: "概要がありません。右上の「編集」をクリックして内容を追加",
+    emptyContent: "本文がありません",
+    emptyContentHint: "右上の「編集」をクリックして内容を追加",
+    aiPlan: "AI処理プラン",
+    unnamedPlan: "無題のプラン",
+    noAiPlan: "まだAI処理プランがありません",
+    goWorkbench: "ワークベンチへ",
+    planDetail: "プラン詳細",
+    deletePlanConfirm: "このAIプランを削除しますか？この操作は取り消せません。",
+    planDeleted: "プランを削除しました",
+    deletePlan: "プラン削除",
+    setNextAction: "次のアクションに設定",
+    nextActionSet: "次のアクションに設定しました",
+    actionFailed: "操作に失敗しました",
+    statusUpdated: "ステータスを更新しました",
+    statusUpdateFailed: "ステータス更新に失敗しました",
+    categorySet: "分類を「{v}」に設定しました",
+    categoryCleared: "分類をクリアしました",
+    categoryUpdateFailed: "分類の更新に失敗しました",
+    startAction: "開始：{action}",
+    startActionToast: "処理を開始し、進行中に移動しました",
+    backLabels: {
+      inbox: "受信箱に戻る",
+      library: "ライブラリに戻る",
+      board: "ボードに戻る",
+      home: "ホームに戻る",
+      workbench: "ワークベンチに戻る",
+      cards: "カード一覧に戻る",
+    },
   },
   upload: {
     click: "クリックでアップロード",
@@ -356,9 +930,7 @@ export const ja: Dictionary = {
     reupload: "クリックで再アップロード",
     uploading: "アップロード中...",
   },
-  boardColumn: {
-    dragHere: "カードをここにドラッグ",
-  },
+  boardColumn: { dragHere: "カードをここにドラッグ" },
   status: {
     inbox: "受信箱",
     planned: "計画中",
@@ -366,15 +938,76 @@ export const ja: Dictionary = {
     done: "完了",
     archived: "アーカイブ",
   },
-  type: {
-    learn: "学習",
-    todo: "TODO",
-    reference: "参考",
-    idea: "アイデア",
+  type: { learn: "学習", todo: "TODO", reference: "参考", idea: "アイデア" },
+  workbench: {
+    title: "ワークベンチ",
+    subtitle: "AIがアイデアを実行可能なプランに変換します",
+    backToCard: "カード詳細に戻る",
+    loadingCard: "カード読み込み中...",
+    cardNotFound: "カードが見つかりません",
+    cardLibrary: "カードライブラリ",
+    searchPlaceholder: "タイトルまたは内容を検索...",
+    allTypes: "すべての種類",
+    allStatuses: "すべてのステータス",
+    noMatch: "一致するカードがありません",
+    originalContent: "元の内容",
+    created: "作成：",
+    updated: "更新：",
+    openDetail: "詳細を開く",
+    backLabels: {
+      board: "ボードに戻る",
+      inbox: "受信箱に戻る",
+      library: "ライブラリに戻る",
+      home: "ホームに戻る",
+      cards: "カード一覧に戻る",
+    },
+    aiSettings: "AI設定",
+    noApiKey: "AI APIキーが未設定です",
+    goConfig: "設定へ",
+    chatEmptyTitle: "AIチャット",
+    chatEmptySubtitle: "現在のカードに基づいて、クイック操作をクリックするか質問を入力",
+    chatEmptyTitleGeneral: "汎用AIチャット",
+    chatEmptySubtitleGeneral: "質問を入力するか、クイック操作をクリックして開始",
+    loadingChat: "会話履歴を読み込み中...",
+    thinking: "考え中",
+    thinkingSub: "AIが回答を整理しています…",
+    seconds: "秒",
+    saved: "保存済み",
+    savePlan: "プランとして保存",
+    saveNextAction: "次のアクションとして保存",
+    planSaved: "プランを保存しました。カード詳細で確認できます",
+    viewDetail: "詳細を見る",
+    saveFailed: "保存に失敗しました",
+    nextActionSaved: "次のアクションを保存しました",
+    inputPlaceholder: "メッセージを入力、AIが分析します...",
+    inputPlaceholderGeneral: "メッセージを入力...",
+    firstToken: "初回",
+    totalTime: "合計",
+    thinkingElapsed: "{n}秒",
+    quickActions: {
+      understand: "このタスクの理解を助けて",
+      breakDown: "実行ステップに分解して",
+      makePlan: "処理プランを作成して",
+      nextStep: "次のアクションを生成（30文字以内）",
+      clarifyIdea: "アイデアを整理して",
+      studyPlan: "学習計画を立てて",
+      breakTask: "タスクを分解して",
+      giveAdvice: "アドバイスをください",
+    },
+  },
+  settings: {
+    appearance: "外観設定",
+    profile: "プロフィール",
+    theme: "テーマ",
+    font: "フォント",
+    themes: { light: "ライト", black: "ダーク", grass: "グラス", brown: "ブラウン" },
+    fonts: { yahei: "YaHei", songti: "宋体", kaiti: "楷体", fzxiaobiaosong: "小標宋" },
   },
   moveFailed: "移動に失敗しました",
   noCards: "カードがありません",
   noCardsHint: "スクリーンショットをアップロードするか、新規カードを作成してください",
+  checkinButton: "チェックイン",
+  checkinDone: "チェックイン済み",
 } as const
 
 export const dictionaries: Record<Locale, Dictionary> = {

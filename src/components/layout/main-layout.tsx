@@ -10,8 +10,9 @@ import { AnnouncementButton } from "@/components/announcements/announcement-butt
 import { AnnouncementProvider } from "@/components/announcements/announcement-provider"
 import { CheckInCalendarDialog } from "@/components/checkin/checkin-calendar-dialog"
 import { useAuth } from "@/components/auth/auth-provider"
-import { TooltipProvider } from "@/components/ui/tooltip"
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { Toaster } from "@/components/ui/sonner"
+import { useI18n } from "@/i18n/context"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,10 +21,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { AppAppearanceLoader } from "@/components/layout/app-appearance-loader"
-import { LogOut, Settings, User, UserRound, CalendarCheck, Monitor } from "lucide-react"
+import { LogOut, Settings, User, UserRound, CalendarCheck } from "lucide-react"
 
 function UserMenu({ onOpenCalendar }: { onOpenCalendar: () => void }) {
   const { user, logout } = useAuth()
+  const { t } = useI18n()
   if (!user) return null
 
   const displayName = user.user_metadata?.display_name as string | undefined
@@ -41,7 +43,9 @@ function UserMenu({ onOpenCalendar }: { onOpenCalendar: () => void }) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="inline-flex items-center gap-2 px-2 py-1 rounded-md hover:bg-accent text-sm">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger className="inline-flex items-center gap-2 px-2 py-1 rounded-md hover:bg-accent text-sm">
         {avatarUrl ? (
           <img src={avatarUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
         ) : (
@@ -49,6 +53,9 @@ function UserMenu({ onOpenCalendar }: { onOpenCalendar: () => void }) {
         )}
         <span className="max-w-[120px] truncate">{displayName || user.email}</span>
       </DropdownMenuTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">{t.tooltips.settings}</TooltipContent>
+      </Tooltip>
       <DropdownMenuContent align="end" className="w-48">
         <div className="px-2 py-1.5">
           <p className="text-sm font-medium truncate">{displayName || "未设置昵称"}</p>
@@ -59,12 +66,6 @@ function UserMenu({ onOpenCalendar }: { onOpenCalendar: () => void }) {
           <CalendarCheck className="h-3.5 w-3.5" />
           每日签到
         </DropdownMenuItem>
-        <Link href="/settings/app">
-          <DropdownMenuItem className="gap-2">
-            <Monitor className="h-3.5 w-3.5" />
-            设置
-          </DropdownMenuItem>
-        </Link>
         <Link href="/settings/profile">
           <DropdownMenuItem className="gap-2">
             <Settings className="h-3.5 w-3.5" />

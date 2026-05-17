@@ -5,7 +5,7 @@ import { Card, CARD_STATUS_LABELS } from "@/types/card"
 import { Badge } from "@/components/ui/badge"
 import { useI18n } from "@/i18n/context"
 import { getCategoryColorClass } from "@/lib/category-colors"
-import { cn } from "@/lib/utils"
+import { cn, CLICKABLE_CARD } from "@/lib/utils"
 import { Calendar } from "lucide-react"
 
 interface CardItemProps {
@@ -23,7 +23,7 @@ export function CardItem({ card, from, className }: CardItemProps) {
     <Link
       href={href}
       className={cn(
-        "block p-4 rounded-lg border bg-card hover:shadow-md transition-shadow",
+        "block p-4 rounded-lg border bg-card", CLICKABLE_CARD,
         className
       )}
     >

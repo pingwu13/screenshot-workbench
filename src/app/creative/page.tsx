@@ -18,25 +18,13 @@ import { authFetch } from "@/lib/api-client"
 import { CreativeShortcut, CreativeShortcutInput, ShortcutType } from "@/types/creative"
 import { toast } from "sonner"
 import Link from "next/link"
-
-const SHORTCUT_TYPES: { value: ShortcutType; label: string; icon: typeof Globe }[] = [
-  { value: "website", label: "网站", icon: Globe },
-  { value: "software", label: "软件", icon: Monitor },
-  { value: "tool", label: "工具", icon: Wrench },
-  { value: "document", label: "文档", icon: FileText },
-  { value: "other", label: "其他", icon: MoreHorizontal },
-]
+import { useI18n } from "@/i18n/context"
 
 const DEFAULT_RECOMMENDATIONS = [
   { title: "DeepSeek", description: "深度求索 AI 大模型对话平台", type: "website" as const, url: "https://chat.deepseek.com" },
   { title: "GitHub", description: "全球最大的代码托管与协作平台", type: "tool" as const, url: "https://github.com" },
   { title: "Supabase", description: "开源 BaaS 平台，提供数据库、认证和存储", type: "tool" as const, url: "https://supabase.com" },
   { title: "Vercel", description: "前端部署平台，支持 Next.js 一键部署", type: "tool" as const, url: "https://vercel.com" },
-]
-
-const MINI_GAMES = [
-  { id: "gomoku", name: "五子棋", description: "经典双人对弈，五子连珠即获胜", href: "/creative/gomoku" },
-  { id: "tetris", name: "俄罗斯方块", description: "经典益智游戏，消行得分挑战", href: "/creative/tetris" },
 ]
 
 const ICON_MAP: Record<string, typeof Globe> = {
@@ -48,11 +36,15 @@ function ShortcutFormDialog({
   onOpenChange,
   initial,
   onSave,
+  t,
+  shortcutTypes,
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
   initial?: CreativeShortcut
   onSave: (data: CreativeShortcutInput) => Promise<void>
+  t: ReturnType<typeof useI18n>["t"]
+  shortcutTypes: { value: ShortcutType; label: string; icon: typeof Globe }[]
 }) {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
@@ -76,7 +68,7 @@ function ShortcutFormDialog({
       await onSave({ title: title.trim(), description: description.trim(), type, url: url.trim() })
       onOpenChange(false)
     } catch {
-      toast.error("保存失败")
+      toast.error(t.creative.saveFailed)
     } finally {
       setSaving(false)
     }
@@ -86,40 +78,40 @@ function ShortcutFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{initial ? "编辑入口" : "新增入口"}</DialogTitle>
+          <DialogTitle>{initial ? t.creative.editEntry : t.creative.newEntry}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label>名称</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例如：DeepSeek" />
+            <Label>{t.creative.name}</Label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t.creative.namePlaceholder} />
           </div>
           <div className="space-y-1.5">
-            <Label>描述</Label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="简短说明" rows={2} />
+            <Label>{t.creative.description}</Label>
+            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t.creative.descPlaceholder} rows={2} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>类型</Label>
+              <Label>{t.creative.type}</Label>
               <Select value={type} onValueChange={(v) => setType(v as ShortcutType)}>
-                <SelectTrigger><SelectValue>{SHORTCUT_TYPES.find((t) => t.value === type)?.label || type}</SelectValue></SelectTrigger>
+                <SelectTrigger><SelectValue>{shortcutTypes.find((st) => st.value === type)?.label || type}</SelectValue></SelectTrigger>
                 <SelectContent>
-                  {SHORTCUT_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                  {shortcutTypes.map((st) => (
+                    <SelectItem key={st.value} value={st.value}>{st.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>URL（可选）</Label>
-              <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://..." />
+              <Label>{t.creative.url}</Label>
+              <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder={t.creative.urlPlaceholder} />
             </div>
           </div>
         </div>
         <div className="flex justify-end gap-2 pt-3 border-t">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>取消</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t.common.cancel}</Button>
           <Button onClick={handleSave} disabled={!title.trim() || saving}>
             {saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}
-            保存
+            {t.common.save}
           </Button>
         </div>
       </DialogContent>
@@ -128,10 +120,24 @@ function ShortcutFormDialog({
 }
 
 export default function CreativePage() {
+  const { t } = useI18n()
   const [shortcuts, setShortcuts] = useState<CreativeShortcut[]>([])
   const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<CreativeShortcut | undefined>()
+
+  const shortcutTypes: { value: ShortcutType; label: string; icon: typeof Globe }[] = [
+    { value: "website", label: t.creative.types.website, icon: Globe },
+    { value: "software", label: t.creative.types.software, icon: Monitor },
+    { value: "tool", label: t.creative.types.tool, icon: Wrench },
+    { value: "document", label: t.creative.types.document, icon: FileText },
+    { value: "other", label: t.creative.types.other, icon: MoreHorizontal },
+  ]
+
+  const miniGames = [
+    { id: "gomoku", name: t.creative.games.gomoku.name, description: t.creative.games.gomoku.desc, href: "/creative/gomoku" },
+    { id: "tetris", name: t.creative.games.tetris.name, description: t.creative.games.tetris.desc, href: "/creative/tetris" },
+  ]
 
   const fetchShortcuts = useCallback(async () => {
     try {
@@ -153,7 +159,7 @@ export default function CreativePage() {
       const err = await res.json()
       throw new Error(err.error || "Failed")
     }
-    toast.success("已添加")
+    toast.success(t.creative.saved)
     await fetchShortcuts()
   }
 
@@ -168,15 +174,15 @@ export default function CreativePage() {
       const err = await res.json()
       throw new Error(err.error || "Failed")
     }
-    toast.success("已更新")
+    toast.success(t.creative.updated)
     await fetchShortcuts()
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("确定删除这个入口吗？")) return
+    if (!confirm(t.creative.deleteConfirm)) return
     const res = await authFetch(`/api/creative/shortcuts/${id}`, { method: "DELETE" })
-    if (!res.ok) { toast.error("删除失败"); return }
-    toast.success("已删除")
+    if (!res.ok) { toast.error(t.creative.deleteFailed); return }
+    toast.success(t.creative.deleted)
     await fetchShortcuts()
   }
 
@@ -191,11 +197,11 @@ export default function CreativePage() {
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">创意栏</h1>
-            <p className="text-muted-foreground mt-1">收纳你的快捷入口、灵感工具和小游戏。</p>
+            <h1 className="text-2xl font-bold tracking-tight">{t.creative.title}</h1>
+            <p className="text-muted-foreground mt-1">{t.creative.subtitle}</p>
           </div>
           <Button size="sm" className="gap-1.5" onClick={() => { setEditing(undefined); setFormOpen(true) }}>
-            <Plus className="h-4 w-4" />新增入口
+            <Plus className="h-4 w-4" />{t.creative.newEntry}
           </Button>
         </div>
 
@@ -203,7 +209,7 @@ export default function CreativePage() {
         <section className="space-y-4">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <ExternalLink className="h-5 w-5 text-muted-foreground" />
-            快捷入口
+            {t.creative.shortcuts}
           </h2>
 
           {loading && (
@@ -215,11 +221,11 @@ export default function CreativePage() {
           {isEmpty && (
             <div className="space-y-4">
               <div className="text-center py-8 text-muted-foreground">
-                <p className="text-sm">还没有快捷入口</p>
-                <p className="text-xs mt-1 text-muted-foreground/60">点击右上角「新增入口」或从下方推荐添加</p>
+                <p className="text-sm">{t.creative.noShortcuts}</p>
+                <p className="text-xs mt-1 text-muted-foreground/60">{t.creative.noShortcutsHint}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-3">推荐入口：</p>
+                <p className="text-xs text-muted-foreground mb-3">{t.creative.recommended}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {DEFAULT_RECOMMENDATIONS.map((rec) => (
                     <UICard key={rec.title} className="rounded-xl">
@@ -229,13 +235,13 @@ export default function CreativePage() {
                             <h3 className="font-medium text-sm">{rec.title}</h3>
                             <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{rec.description}</p>
                             <Badge variant="secondary" className="text-[10px] mt-1.5">
-                              {SHORTCUT_TYPES.find((t) => t.value === rec.type)?.label || rec.type}
+                              {shortcutTypes.find((st) => st.value === rec.type)?.label || rec.type}
                             </Badge>
                           </div>
                         </div>
                         <Button variant="outline" size="sm" className="w-full mt-3 gap-1.5"
                           onClick={() => handleAddRecommendation(rec)}>
-                          <Plus className="h-3.5 w-3.5" />添加到我的创意栏
+                          <Plus className="h-3.5 w-3.5" />{t.creative.addToCreative}
                         </Button>
                       </CardContent>
                     </UICard>
@@ -249,9 +255,9 @@ export default function CreativePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {shortcuts.map((s) => {
                 const Icon = ICON_MAP[s.type] || MoreHorizontal
-                const typeLabel = SHORTCUT_TYPES.find((t) => t.value === s.type)?.label || s.type
+                const typeLabel = shortcutTypes.find((st) => st.value === s.type)?.label || s.type
                 return (
-                  <UICard key={s.id} className="rounded-xl hover:shadow-sm transition-shadow">
+                  <UICard key={s.id} className="rounded-xl transition-all duration-150 ease-out hover:-translate-y-px hover:shadow-md">
                     <CardContent className="pt-5">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
@@ -280,7 +286,7 @@ export default function CreativePage() {
                       {s.url && (
                         <a href={s.url} target="_blank" rel="noopener noreferrer" className="block mt-3">
                           <Button variant="outline" size="sm" className="w-full gap-1.5">
-                            <ExternalLink className="h-3.5 w-3.5" />打开
+                            <ExternalLink className="h-3.5 w-3.5" />{t.creative.open}
                           </Button>
                         </a>
                       )}
@@ -296,11 +302,11 @@ export default function CreativePage() {
         <section className="space-y-4">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Grid3X3 className="h-5 w-5 text-muted-foreground" />
-            小游戏
+            {t.creative.miniGames}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {MINI_GAMES.map((game) => (
-              <UICard key={game.id} className="rounded-xl hover:shadow-sm transition-shadow">
+            {miniGames.map((game) => (
+              <UICard key={game.id} className="rounded-xl transition-all duration-150 ease-out hover:-translate-y-px hover:shadow-md">
                 <CardContent className="pt-5">
                   <div className="flex items-start gap-3">
                     <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
@@ -312,7 +318,7 @@ export default function CreativePage() {
                     </div>
                   </div>
                   <Link href={game.href} className="block mt-3">
-                    <Button variant="outline" size="sm" className="w-full gap-1.5">启动</Button>
+                    <Button variant="outline" size="sm" className="w-full gap-1.5">{t.creative.launch}</Button>
                   </Link>
                 </CardContent>
               </UICard>
@@ -325,6 +331,8 @@ export default function CreativePage() {
           onOpenChange={setFormOpen}
           initial={editing}
           onSave={editing ? handleUpdate : handleCreate}
+          t={t}
+          shortcutTypes={shortcutTypes}
         />
       </div>
     </ProtectedPage>

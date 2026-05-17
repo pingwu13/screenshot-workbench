@@ -6,11 +6,14 @@ import { getBrowserClient } from "@/lib/supabase-browser"
 import { getLocalDateString } from "@/lib/date"
 import { dailyQuotes, DailyQuote } from "@/data/daily-quotes"
 import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { Sparkles } from "lucide-react"
 import { CheckInToast } from "@/components/checkin/checkin-toast"
+import { useI18n } from "@/i18n/context"
 
 export function DailyCheckInButton() {
   const { user } = useAuth()
+  const { t } = useI18n()
   const [todayQuote, setTodayQuote] = useState<DailyQuote | null>(null)
   const [checkedIn, setCheckedIn] = useState(false)
   const [showToast, setShowToast] = useState(false)
@@ -71,15 +74,13 @@ export function DailyCheckInButton() {
       }
       console.log("[CheckIn] insert payload:", payload)
 
-      const { error } = await client.from("daily_checkins").insert(payload)
+      const { error } = await client
+        .from("daily_checkins")
+        .upsert(payload, { onConflict: "user_id,checkin_date" })
 
       if (error) {
-        console.error("[CheckIn] insert error:", error.code, error.message, error.details)
-        if (error.code === "23505") {
-          setCheckedIn(true)
-        } else {
-          alert(`打卡失败: ${error.message}`)
-        }
+        console.error("[CheckIn] upsert error:", error.code, error.message, error.details)
+        alert(`打卡失败: ${error.message}`)
         return
       }
 
@@ -95,16 +96,21 @@ export function DailyCheckInButton() {
 
   return (
     <>
-      <Button
-        variant={checkedIn ? "ghost" : "outline"}
-        size="sm"
-        className="gap-1"
-        onClick={handleCheckIn}
-        disabled={loading}
-      >
-        <Sparkles className="h-3.5 w-3.5" />
-        {checkedIn ? "已打卡" : "每日打卡"}
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant={checkedIn ? "ghost" : "outline"}
+            size="sm"
+            className="gap-1"
+            onClick={handleCheckIn}
+            disabled={loading}
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            {checkedIn ? t.checkinDone : t.checkinButton}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">{t.tooltips.dailyCheckin}</TooltipContent>
+      </Tooltip>
 
       {showToast && todayQuote && (
         <CheckInToast

@@ -13,8 +13,17 @@ export default function BoardPage() {
   const [cards, setCards] = useState<Card[]>([])
 
   const fetchCards = useCallback(async () => {
-    const res = await authFetch("/api/cards")
-    setCards(await res.json())
+    try {
+      const res = await authFetch("/api/cards")
+      if (!res.ok) {
+        console.error(`[BoardPage] fetchCards failed: ${res.status}`)
+        return
+      }
+      const data = await res.json()
+      setCards(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error("[BoardPage] fetchCards error:", err instanceof Error ? err.message : String(err || "unknown"))
+    }
   }, [])
 
   useEffect(() => {

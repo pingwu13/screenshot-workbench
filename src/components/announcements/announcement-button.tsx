@@ -4,9 +4,11 @@ import { useState, useCallback } from "react"
 import { Mail, Sprout, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
 import { useAnnouncements } from "@/components/announcements/announcement-provider"
 import { AnnouncementWithRead } from "@/types/announcement"
+import { useI18n } from "@/i18n/context"
 
 const LEVEL_CONFIG = {
   important: { dot: "bg-rose-400/80", badge: "重要" },
@@ -16,6 +18,7 @@ const LEVEL_CONFIG = {
 
 export function AnnouncementButton() {
   const { announcements, unreadCount, loading, markAsRead } = useAnnouncements()
+  const { t } = useI18n()
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState<AnnouncementWithRead | null>(null)
 
@@ -30,12 +33,14 @@ export function AnnouncementButton() {
   return (
     <>
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger
-          className={cn(
-            "relative inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors",
-            open && "bg-accent text-accent-foreground"
-          )}
-        >
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <PopoverTrigger
+              className={cn(
+                "relative inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors",
+                open && "bg-accent text-accent-foreground"
+              )}
+            >
           {/* Leaf decoration */}
           <Sprout
             className={cn(
@@ -55,6 +60,9 @@ export function AnnouncementButton() {
             <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-rose-400/80 ring-1 ring-background" />
           )}
         </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">{t.tooltips.announcements}</TooltipContent>
+        </Tooltip>
         <PopoverContent align="end" sideOffset={6} className="w-80 p-0">
           <div className="px-4 py-3 border-b">
             <p className="text-sm font-medium">公告邮箱</p>

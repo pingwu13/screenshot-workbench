@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Sparkles,
   Gamepad2,
+  Settings,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -36,6 +37,7 @@ export function Sidebar() {
     { href: "/board", label: t.nav.board, icon: LayoutGrid },
     { href: "/library", label: t.nav.library, icon: Library },
     { href: "/creative", label: "创意栏", icon: Gamepad2 },
+    { href: "/settings/app", label: t.nav.settings, icon: Settings },
   ]
 
   return (
@@ -85,13 +87,13 @@ export function Sidebar() {
               : pathname.startsWith(item.href)
           return collapsed ? (
             <Tooltip key={item.href}>
-              <TooltipTrigger>
+              <TooltipTrigger asChild>
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center justify-center h-9 w-9 mx-auto rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors",
+                    "flex items-center justify-center h-9 w-9 mx-auto rounded-md text-muted-foreground border-l-[3px] border-l-transparent hover:bg-accent hover:text-accent-foreground transition-colors",
                     isActive &&
-                      "bg-primary/10 text-primary hover:bg-primary/15"
+                      "bg-primary/15 text-primary border-l-primary hover:bg-primary/20"
                   )}
                 >
                   <item.icon className="h-5 w-5" />
@@ -104,9 +106,9 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors",
+                "flex items-center gap-3 px-3 py-2 rounded-md text-sm text-muted-foreground border-l-[3px] border-l-transparent hover:bg-accent hover:text-accent-foreground transition-colors",
                 isActive &&
-                  "bg-primary/10 text-primary hover:bg-primary/15 font-medium"
+                  "bg-primary/15 text-primary border-l-primary hover:bg-primary/20 font-semibold"
               )}
             >
               <item.icon className="h-4 w-4" />

@@ -17,22 +17,14 @@ import { toast } from "sonner"
 import { authFetch } from "@/lib/api-client"
 import { CategorySelect } from "@/components/cards/category-select"
 import { getCategoryColorClass } from "@/lib/category-colors"
-import { cn } from "@/lib/utils"
-
-const FROM_LABELS: Record<string, string> = {
-  inbox: "返回收集箱",
-  library: "返回资料库",
-  board: "返回看板",
-  home: "返回首页",
-  workbench: "返回工作台",
-}
+import { cn, CLICKABLE_CARD } from "@/lib/utils"
 
 export default function CardDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
   const searchParams = useSearchParams()
   const from = searchParams.get("from")
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const [card, setCard] = useState<Card | null>(null)
   const [cardCategory, setCardCategory] = useState("")
   const [loading, setLoading] = useState(true)
@@ -81,8 +73,8 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
       })
       setCardCategory(v)
       window.dispatchEvent(new Event("cards-updated"))
-      toast.success(v ? `分类已设为「${v}」` : "已清除分类")
-    } catch { toast.error("更新分类失败") }
+      toast.success(v ? t.card.categorySet.replace("{v}", v) : t.card.categoryCleared)
+    } catch { toast.error(t.card.categoryUpdateFailed) }
   }
 
   const handleStatusChange = async (v: string) => {
@@ -94,8 +86,8 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
       })
       setCard({ ...card, status: v as Card["status"] })
       window.dispatchEvent(new Event("cards-updated"))
-      toast.success(`状态已更新`)
-    } catch { toast.error("更新状态失败") }
+      toast.success(t.card.statusUpdated)
+    } catch { toast.error(t.card.statusUpdateFailed) }
   }
 
   const handleDelete = async () => {
@@ -123,7 +115,7 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
     else router.replace("/")
   }
 
-  const backLabel = FROM_LABELS[from || ""] || t.card.back
+  const backLabel = (from && from in t.card.backLabels) ? t.card.backLabels[from as keyof typeof t.card.backLabels] : t.card.back
 
   const hasImages = (card?.images?.length || 0) > 0 || !!card?.generatedImageUrl || !!card?.imageUrl
   const hasContent = !!card?.note || !!card?.summary
@@ -141,7 +133,7 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
           </Button>
           <div className="flex gap-2">
             <Link href={`/workbench?cardId=${card.id}&from=${from || "detail"}`}>
-              <Button variant="outline" size="sm" className="gap-1"><Workflow className="h-3.5 w-3.5" />工作台</Button>
+              <Button variant="outline" size="sm" className="gap-1"><Workflow className="h-3.5 w-3.5" />{t.card.workbench}</Button>
             </Link>
             <Link href={`/cards/${card.id}/edit`}>
               <Button variant="outline" size="sm" className="gap-1"><Pencil className="h-3.5 w-3.5" />{t.card.edit}</Button>
@@ -160,7 +152,7 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
               {card.category ? (
                 <Badge className={cn(getCategoryColorClass("gray"))}>{card.category}</Badge>
               ) : (
-                <Badge variant="outline" className="text-muted-foreground">未分类</Badge>
+                <Badge variant="outline" className="text-muted-foreground">{t.common.uncategorized}</Badge>
               )}
               <Badge variant="secondary">{CARD_STATUS_LABELS[card.status]}</Badge>
             </div>
@@ -168,7 +160,7 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
               <p className="mt-3 text-muted-foreground leading-relaxed">{card.summary}</p>
             )}
             {!card.summary && (
-              <p className="mt-3 text-sm text-muted-foreground/60">暂无简介，点击右上角「编辑」补充内容</p>
+              <p className="mt-3 text-sm text-muted-foreground/60">{t.card.emptySummary}</p>
             )}
           </CardContent>
         </UICard>
@@ -177,7 +169,7 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
         {(hasImages || hasContent) && (
           <UICard className="rounded-2xl">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2"><FileText className="h-4 w-4" />内容</CardTitle>
+              <CardTitle className="text-base flex items-center gap-2"><FileText className="h-4 w-4" />{t.card.content}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {hasImages && (
@@ -207,13 +199,13 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
         {!hasImages && !hasContent && (
           <UICard className="rounded-2xl">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2"><FileText className="h-4 w-4" />原始内容</CardTitle>
+              <CardTitle className="text-base flex items-center gap-2"><FileText className="h-4 w-4" />{t.card.originalContent}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-center py-10 text-muted-foreground">
                 <Image className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">暂无正文内容</p>
-                <p className="text-xs mt-1 text-muted-foreground/60">点击右上角「编辑」补充内容</p>
+                <p className="text-sm">{t.card.emptyContent}</p>
+                <p className="text-xs mt-1 text-muted-foreground/60">{t.card.emptyContentHint}</p>
               </div>
             </CardContent>
           </UICard>
@@ -222,18 +214,18 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
         {/* AI Plans */}
         <UICard className="rounded-2xl">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2"><Sparkles className="h-4 w-4" />AI 处理方案</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2"><Sparkles className="h-4 w-4" />{t.card.aiPlan}</CardTitle>
           </CardHeader>
           <CardContent>
             {plans.length > 0 ? (
               <div className="space-y-2">
                 {plans.map((p) => (
                   <button key={p.id} onClick={() => setSelectedPlan(p)}
-                    className="w-full text-left p-3 rounded-xl border hover:bg-accent transition-colors flex items-center justify-between gap-2">
+                    className={cn("w-full text-left p-3 rounded-xl border flex items-center justify-between gap-2", CLICKABLE_CARD)}>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{p.title || "未命名方案"}</p>
+                      <p className="text-sm font-medium truncate">{p.title || t.card.unnamedPlan}</p>
                       <p className="text-xs text-muted-foreground truncate mt-0.5">{p.summary}</p>
-                      <p className="text-[10px] text-muted-foreground/60 mt-1">{new Date(p.created_at).toLocaleString("zh-CN")}</p>
+                      <p className="text-[10px] text-muted-foreground/60 mt-1">{new Date(p.created_at).toLocaleString(locale)}</p>
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                   </button>
@@ -247,9 +239,9 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">还没有 AI 处理方案</p>
+                <p className="text-sm">{t.card.noAiPlan}</p>
                 <Link href={`/workbench?cardId=${card.id}&from=${from || "detail"}`}>
-                  <Button variant="outline" size="sm" className="gap-1 mt-2"><Workflow className="h-3.5 w-3.5" />进入工作台</Button>
+                  <Button variant="outline" size="sm" className="gap-1 mt-2"><Workflow className="h-3.5 w-3.5" />{t.card.goWorkbench}</Button>
                 </Link>
               </div>
             )}
@@ -260,10 +252,10 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
         <Dialog open={!!selectedPlan} onOpenChange={() => setSelectedPlan(null)}>
           <DialogContent className="max-w-xl max-h-[70vh] flex flex-col">
             <DialogHeader>
-              <DialogTitle>{selectedPlan?.title || "方案详情"}</DialogTitle>
+              <DialogTitle>{selectedPlan?.title || t.card.planDetail}</DialogTitle>
             </DialogHeader>
             <div className="flex-1 overflow-y-auto space-y-3">
-              <p className="text-[10px] text-muted-foreground">{selectedPlan?.created_at ? new Date(selectedPlan.created_at).toLocaleString("zh-CN") : ""}</p>
+              <p className="text-[10px] text-muted-foreground">{selectedPlan?.created_at ? new Date(selectedPlan.created_at).toLocaleString(locale) : ""}</p>
               <div className="p-4 rounded-xl bg-muted/50">
                 <p className="text-sm whitespace-pre-wrap leading-relaxed">{selectedPlan?.content}</p>
               </div>
@@ -271,19 +263,19 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
             <div className="flex justify-between gap-2 pt-2 border-t">
               <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10"
                 onClick={async () => {
-                  if (!selectedPlan || !confirm("确定删除这个 AI 方案吗？删除后不可恢复。")) return
+                  if (!selectedPlan || !confirm(t.card.deletePlanConfirm)) return
                   try {
                     await authFetch(`/api/cards/${card.id}/ai-plans/${selectedPlan.id}`, { method: "DELETE" })
                     setSelectedPlan(null)
                     setPlans((prev) => prev.filter((p) => p.id !== selectedPlan.id))
                     window.dispatchEvent(new Event("ai-plans-updated"))
-                    toast.success("方案已删除")
-                  } catch { toast.error("删除失败") }
+                    toast.success(t.card.planDeleted)
+                  } catch { toast.error(t.card.deleteFailed) }
                 }}>
-                <Trash2 className="h-3.5 w-3.5 mr-1" />删除方案
+                <Trash2 className="h-3.5 w-3.5 mr-1" />{t.card.deletePlan}
               </Button>
               <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={() => setSelectedPlan(null)}>关闭</Button>
+                <Button variant="ghost" size="sm" onClick={() => setSelectedPlan(null)}>{t.common.close}</Button>
                 <Button variant="outline" size="sm" className="gap-1"
                   onClick={async () => {
                     if (!selectedPlan) return
@@ -294,11 +286,11 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
                         body: JSON.stringify({ nextAction: action }),
                       })
                       window.dispatchEvent(new Event("cards-updated"))
-                      toast.success("已设为下一步行动")
+                      toast.success(t.card.nextActionSet)
                       setSelectedPlan(null)
-                    } catch { toast.error("操作失败") }
+                    } catch { toast.error(t.card.actionFailed) }
                   }}>
-                  <ArrowRight className="h-3.5 w-3.5" />设为下一步行动
+                  <ArrowRight className="h-3.5 w-3.5" />{t.card.setNextAction}
                 </Button>
               </div>
             </div>
@@ -308,16 +300,16 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
         {/* Properties */}
         <UICard className="rounded-2xl">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2"><Info className="h-4 w-4" />卡片属性</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2"><Info className="h-4 w-4" />{t.card.properties}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
               <div className="space-y-1.5">
-                <p className="text-xs text-muted-foreground flex items-center gap-1"><Tag className="h-3 w-3" />分类</p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1"><Tag className="h-3 w-3" />{t.card.type}</p>
                 <CategorySelect value={cardCategory} onChange={handleCategoryChange} showAdd={false} />
               </div>
               <div className="space-y-1.5">
-                <p className="text-xs text-muted-foreground flex items-center gap-1"><Tag className="h-3 w-3" />状态</p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1"><Tag className="h-3 w-3" />{t.card.status}</p>
                 <Select value={card.status} onValueChange={(v) => v && handleStatusChange(v)}>
                   <SelectTrigger className="h-8 text-sm"><SelectValue>{CARD_STATUS_LABELS[card.status]}</SelectValue></SelectTrigger>
                   <SelectContent>
@@ -329,7 +321,7 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
               </div>
               {card.nextAction && (
                 <div className="space-y-1.5 col-span-full">
-                  <p className="text-xs text-muted-foreground">下一步行动</p>
+                  <p className="text-xs text-muted-foreground">{t.card.action}</p>
                   <Button
                     className="w-full justify-start gap-2"
                     onClick={async () => {
@@ -340,22 +332,22 @@ export default function CardDetailPage({ params }: { params: Promise<{ id: strin
                         })
                         setCard({ ...card, status: "doing" })
                         window.dispatchEvent(new Event("cards-updated"))
-                        toast.success("已开始处理，进入进行中状态")
-                      } catch { toast.error("操作失败") }
+                        toast.success(t.card.startActionToast)
+                      } catch { toast.error(t.card.actionFailed) }
                     }}
                   >
                     <Play className="h-4 w-4" />
-                    <span className="text-sm">开始：{card.nextAction}</span>
+                    <span className="text-sm">{t.card.startAction.replace("{action}", card.nextAction)}</span>
                   </Button>
                 </div>
               )}
               <div className="space-y-1.5">
-                <p className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" />创建时间</p>
-                <p className="text-sm font-mono">{new Date(card.createdAt).toLocaleString("zh-CN")}</p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" />{t.card.createdAt}</p>
+                <p className="text-sm font-mono">{new Date(card.createdAt).toLocaleString(locale)}</p>
               </div>
               <div className="space-y-1.5">
-                <p className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" />更新时间</p>
-                <p className="text-sm font-mono">{new Date(card.updatedAt).toLocaleString("zh-CN")}</p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" />{t.card.updatedAt}</p>
+                <p className="text-sm font-mono">{new Date(card.updatedAt).toLocaleString(locale)}</p>
               </div>
             </div>
           </CardContent>

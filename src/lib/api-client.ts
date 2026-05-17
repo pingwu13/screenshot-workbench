@@ -15,5 +15,17 @@ export async function authFetch(url: string, init?: RequestInit): Promise<Respon
     headers.set("Authorization", `Bearer ${token}`)
   }
 
-  return fetch(url, { ...init, headers })
+  let res: Response
+  try {
+    res = await fetch(url, { ...init, headers })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err || "Unknown fetch error")
+    console.error(`[authFetch] ${url} network error:`, msg)
+    throw new Error(`[authFetch] ${url} network error: ${msg}`)
+  }
+
+  if (!res.ok) {
+    console.error(`[authFetch] ${url} failed: ${res.status} ${res.statusText}`)
+  }
+  return res
 }

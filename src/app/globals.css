@@ -194,3 +194,8 @@
 .app-font-yahei {
   font-family: "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
 }
+
+/* ---- Locale-based font defaults (when no user font preference is set) ---- */
+html[lang="ja"]:not(.app-font-songti):not(.app-font-kaiti):not(.app-font-fzxiaobiaosong):not(.app-font-yahei) body {
+  font-family: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", var(--font-geist-sans), system-ui, sans-serif;
+}
