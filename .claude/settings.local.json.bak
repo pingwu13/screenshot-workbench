@@ -31,6 +31,7 @@
       "Bash(head -n * *)",
       "Bash(tail *)",
       "Bash(tail -n * *)",
+
       "Bash(sed -n * *)",
 
       "Bash(grep -n * *)",
@@ -54,11 +55,25 @@
       "Edit(./hooks/**)",
       "Edit(./app/**)",
       "Edit(./pages/**)",
-      "Edit(./styles/**)"
+      "Edit(./styles/**)",
+
+  
+
+      "Write(./src/**)",
+      "Write(./public/**)",
+      "Write(./components/**)",
+      "Write(./lib/**)",
+      "Write(./utils/**)",
+      "Write(./hooks/**)",
+      "Write(./app/**)",
+      "Write(./pages/**)",
+      "Write(./styles/**)"
     ],
     "ask": [
       "Bash",
       "Edit",
+      "Write",
+      
       "WebFetch",
 
       "Edit(./package.json)",
@@ -75,9 +90,29 @@
       "Edit(./README*)",
       "Edit(./CLAUDE.md)",
       "Edit(./AGENTS.md)",
-      
+      "Edit(./.claude/**)",
       "Edit(./supabase/**)",
-      "Edit(./*.sql)"
+      "Edit(./*.sql)",
+
+
+
+      "Write(./package.json)",
+      "Write(./package-lock.json)",
+      "Write(./pnpm-lock.yaml)",
+      "Write(./yarn.lock)",
+      "Write(./next.config.*)",
+      "Write(./tsconfig.json)",
+      "Write(./eslint.config.*)",
+      "Write(./postcss.config.*)",
+      "Write(./tailwind.config.*)",
+      "Write(./components.json)",
+      "Write(./.gitignore)",
+      "Write(./README*)",
+      "Write(./CLAUDE.md)",
+      "Write(./AGENTS.md)",
+      "Write(./.claude/**)",
+      "Write(./supabase/**)",
+      "Write(./*.sql)"
     ],
     "deny": [
       "Bash(rm *)",
@@ -106,41 +141,6 @@
       "Bash(cat .env)",
       "Bash(cat .env.*)",
 
-      "Bash(head *.env)",
-      "Bash(head .env)",
-      "Bash(head .env.*)",
-      "Bash(head -n * *.env)",
-      "Bash(head -n * .env)",
-      "Bash(head -n * .env.*)",
-
-      "Bash(tail *.env)",
-      "Bash(tail .env)",
-      "Bash(tail .env.*)",
-      "Bash(tail -n * *.env)",
-      "Bash(tail -n * .env)",
-      "Bash(tail -n * .env.*)",
-
-      "Bash(sed -n * *.env)",
-      "Bash(sed -n * .env)",
-      "Bash(sed -n * .env.*)",
-
-      "Bash(grep * *.env)",
-      "Bash(grep * .env)",
-      "Bash(grep * .env.*)",
-      "Bash(grep -n * *.env)",
-      "Bash(grep -n * .env)",
-      "Bash(grep -n * .env.*)",
-      "Bash(grep -R * *.env)",
-      "Bash(grep -R * .env)",
-      "Bash(grep -R * .env.*)",
-      "Bash(grep -R -n * *.env)",
-      "Bash(grep -R -n * .env)",
-      "Bash(grep -R -n * .env.*)",
-
-      "Bash(rg * *.env)",
-      "Bash(rg * .env)",
-      "Bash(rg * .env.*)",
-
       "Read(./.env)",
       "Read(./.env.*)",
       "Read(./secrets/**)",
@@ -149,10 +149,17 @@
 
       "Edit(./.env)",
       "Edit(./.env.*)",
-      "Edit(./.claude/**)",
       "Edit(./secrets/**)",
       "Edit(./credentials/**)",
-      "Edit(./config/credentials.json)"
+      "Edit(./config/credentials.json)",
+
+      "Write(./.env)",
+      "Write(./.env.*)",
+      "Write(./secrets/**)",
+      "Write(./credentials/**)",
+      "Write(./config/credentials.json)"
+
+
     ]
   }
 }

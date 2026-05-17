@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getCurrentUserId } from "@/lib/auth"
-import { isSupabaseConfigured, createClient } from "@/lib/supabase"
+import { getCurrentUserId, getToken, createAuthClient } from "@/lib/auth"
+import { isSupabaseConfigured } from "@/lib/supabase"
 import { cardStore } from "@/lib/data-store"
 
 const ALLOWED_DAYS = [30, 60, 180]
@@ -29,6 +29,8 @@ export async function POST(req: NextRequest) {
   const userId = await getCurrentUserId(req)
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
+  const token = getToken(req)!
+
   const { days, confirmText } = await req.json()
 
   if (!ALLOWED_DAYS.includes(days)) {
@@ -53,7 +55,7 @@ export async function POST(req: NextRequest) {
   // Also delete from Supabase if configured
   if (isSupabaseConfigured()) {
     try {
-      const supabase = createClient()
+      const supabase = createAuthClient(token)
       await supabase.from("cards").delete().eq("user_id", userId).lt("created_at", cutoffStr)
     } catch (err) { console.error("Supabase cleanup error:", err) }
   }

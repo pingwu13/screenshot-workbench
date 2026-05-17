@@ -18,6 +18,8 @@ export interface Card {
   generatedImageUrl: string
   ocrText: string
   nextAction: string
+  aiSummary: string
+  aiPlan: string
   createdAt: string
   updatedAt: string
 }

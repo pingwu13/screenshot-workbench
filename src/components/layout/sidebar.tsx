@@ -11,6 +11,8 @@ import {
   Plus,
   ChevronLeft,
   ChevronRight,
+  Sparkles,
+  Gamepad2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -30,8 +32,10 @@ export function Sidebar() {
   const NAV_ITEMS = [
     { href: "/", label: t.nav.home, icon: Home },
     { href: "/inbox", label: t.nav.inbox, icon: Inbox },
+    { href: "/workbench", label: "工作台", icon: Sparkles },
     { href: "/board", label: t.nav.board, icon: LayoutGrid },
     { href: "/library", label: t.nav.library, icon: Library },
+    { href: "/creative", label: "创意栏", icon: Gamepad2 },
   ]
 
   return (

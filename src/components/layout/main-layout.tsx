@@ -6,6 +6,8 @@ import { Sidebar } from "@/components/layout/sidebar"
 import { UserSignature } from "@/components/layout/user-signature"
 import { LanguageSwitcher } from "@/components/layout/language-switcher"
 import { DailyCheckInButton } from "@/components/checkin/daily-checkin-button"
+import { AnnouncementButton } from "@/components/announcements/announcement-button"
+import { AnnouncementProvider } from "@/components/announcements/announcement-provider"
 import { CheckInCalendarDialog } from "@/components/checkin/checkin-calendar-dialog"
 import { useAuth } from "@/components/auth/auth-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -88,6 +90,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <TooltipProvider>
+      <AnnouncementProvider>
       <AppAppearanceLoader>
       <div className="flex h-screen overflow-hidden">
         <Sidebar />
@@ -99,6 +102,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2 shrink-0">
               <DailyCheckInButton />
               <LanguageSwitcher />
+              <AnnouncementButton />
               <UserMenu onOpenCalendar={() => setCalendarOpen(true)} />
             </div>
           </div>
@@ -108,6 +112,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       </AppAppearanceLoader>
       <Toaster />
       <CheckInCalendarDialog open={calendarOpen} onOpenChange={setCalendarOpen} />
+      </AnnouncementProvider>
     </TooltipProvider>
   )
 }

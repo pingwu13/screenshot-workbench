@@ -57,6 +57,8 @@ export const cardStore = {
       generatedImageUrl: input.generatedImageUrl,
       ocrText: input.ocrText,
       nextAction: input.nextAction,
+      aiSummary: input.aiSummary || "",
+      aiPlan: input.aiPlan || "",
       createdAt: now,
       updatedAt: now,
     }

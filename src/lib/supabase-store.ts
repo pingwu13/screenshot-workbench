@@ -29,6 +29,8 @@ function toCard(row: Record<string, unknown>): Card {
     generatedImageUrl: row.generated_image_url as string,
     ocrText: row.ocr_text as string,
     nextAction: row.next_action as string,
+    aiSummary: row.ai_summary as string,
+    aiPlan: row.ai_plan as string,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   }
@@ -50,6 +52,8 @@ function toDb(input: UpdateCardInput & { userId?: string }): Record<string, unkn
   if (input.generatedImageUrl !== undefined) db.generated_image_url = input.generatedImageUrl
   if (input.ocrText !== undefined) db.ocr_text = input.ocrText
   if (input.nextAction !== undefined) db.next_action = input.nextAction
+  if (input.aiSummary !== undefined) db.ai_summary = input.aiSummary
+  if (input.aiPlan !== undefined) db.ai_plan = input.aiPlan
   return db
 }
 

@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge"
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
-import { ImageUpload } from "@/components/upload/image-upload"
+import { ScreenshotInput } from "@/components/upload/screenshot-input"
 import { CategorySelect } from "@/components/cards/category-select"
 import { authFetch } from "@/lib/api-client"
 import { getBrowserClient } from "@/lib/supabase-browser"
@@ -99,6 +99,8 @@ export function CardForm({ initialData }: CardFormProps) {
     generatedImageUrl: initialData?.generatedImageUrl || "",
     ocrText: initialData?.ocrText || "",
     nextAction: initialData?.nextAction || "",
+    aiSummary: initialData?.aiSummary || "",
+    aiPlan: initialData?.aiPlan || "",
   })
 
   const [tagInput, setTagInput] = useState("")
@@ -233,7 +235,7 @@ export function CardForm({ initialData }: CardFormProps) {
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="space-y-2">
         <Label>{t.card.uploadScreenshot}</Label>
-        <ImageUpload
+        <ScreenshotInput
           existingUrls={form.images.length > 0 ? form.images : form.imageUrl ? [form.imageUrl] : undefined}
           onFilesChange={(files) => setPendingFiles(files)}
         />

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getCardStore } from "@/lib/supabase-store"
-import { getCurrentUserId, getToken } from "@/lib/auth"
-import { isSupabaseConfigured, createClient } from "@/lib/supabase"
+import { getCurrentUserId, getToken, createAuthClient } from "@/lib/auth"
+import { isSupabaseConfigured } from "@/lib/supabase"
 
-async function deleteStorageFile(userId: string, imagePath: string | null | undefined) {
+async function deleteStorageFile(token: string, userId: string, imagePath: string | null | undefined) {
   if (!imagePath) return
   if (isSupabaseConfigured()) {
-    try { await createClient().storage.from("screenshots").remove([`${userId}/${imagePath}`]) }
+    try { await createAuthClient(token).storage.from("screenshots").remove([`${userId}/${imagePath}`]) }
     catch (err) { console.warn("Storage delete failed:", err) }
   }
 }
@@ -48,7 +48,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const store = getCardStore(userId, getToken(req) || undefined)
     const card = await store.getById(id)
     if (!card) return NextResponse.json({ error: "Card not found" }, { status: 404 })
-    if (card.imagePath) await deleteStorageFile(userId, card.imagePath)
+    if (card.imagePath) await deleteStorageFile(getToken(req)!, userId, card.imagePath)
     const deleted = await store.delete(id)
     if (!deleted) return NextResponse.json({ error: "Failed to delete" }, { status: 500 })
     return NextResponse.json({ success: true })

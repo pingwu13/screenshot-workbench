@@ -9,9 +9,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
-import { Loader2, Settings, Palette, Type, Trash2, RotateCcw, ChevronUp, ChevronDown, Pencil, Tag } from "lucide-react"
+import { Loader2, Settings, Palette, Type, Trash2, RotateCcw, ChevronUp, ChevronDown, Pencil, Tag, Bot, Eye, EyeOff } from "lucide-react"
 import { authFetch } from "@/lib/api-client"
 import { getCategoryColorClass, CATEGORY_COLOR_OPTIONS } from "@/lib/category-colors"
+
+const VALID_PROVIDERS = ["deepseek", "openai-compatible", "custom"]
 import { cn } from "@/lib/utils"
 
 interface CatItem2 { id: string; name: string; color: string; sort_order: number }
@@ -122,6 +124,171 @@ function CategoryManagement() {
             {CATEGORY_COLOR_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
           </select>
           <Button size="sm" onClick={addCat} disabled={adding}>{adding ? "..." : "新增分类"}</Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function AISettings() {
+  const [provider, setProvider] = useState("deepseek")
+  const [baseUrl, setBaseUrl] = useState("https://api.deepseek.com")
+  const [apiKeyInput, setApiKeyInput] = useState("")
+  const [showKey, setShowKey] = useState(false)
+  const [model, setModel] = useState("deepseek-chat")
+  const [thinkMode, setThinkMode] = useState(false)
+  const [thinkLevel, setThinkLevel] = useState("medium")
+  const [multiTurn, setMultiTurn] = useState(true)
+  const [contextRounds, setContextRounds] = useState("8")
+  const [hasSavedKey, setHasSavedKey] = useState(false)
+  const [keyPreview, setKeyPreview] = useState("")
+  const [saving, setSaving] = useState(false)
+  const [testing, setTesting] = useState(false)
+
+  // Load settings on mount
+  useEffect(() => {
+    authFetch("/api/ai/settings").then(async (r) => {
+      if (!r.ok) return
+      const d = await r.json()
+      setProvider(d.provider || "deepseek")
+      setBaseUrl(d.base_url || "https://api.deepseek.com")
+      setModel(d.model || "deepseek-chat")
+      setThinkMode(d.reasoning_enabled || false)
+      setThinkLevel(d.reasoning_strength || "medium")
+      setMultiTurn(d.multi_turn_enabled ?? true)
+      setContextRounds(String(d.context_message_limit || 8))
+      setHasSavedKey(d.has_api_key)
+      setKeyPreview(d.api_key_preview || "")
+    }).catch(() => {})
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      const body: Record<string, unknown> = {
+        provider, base_url: baseUrl, model,
+        reasoning_enabled: thinkMode, reasoning_strength: thinkLevel,
+        multi_turn_enabled: multiTurn, context_message_limit: parseInt(contextRounds) || 8,
+      }
+      // Only send api_key if user typed something new
+      if (apiKeyInput.trim()) body.api_key = apiKeyInput.trim()
+
+      const res = await authFetch("/api/ai/settings", {
+        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+      })
+      if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || "保存失败") }
+      const d = await res.json()
+      setHasSavedKey(d.has_api_key)
+      setKeyPreview(d.api_key_preview || "")
+      setApiKeyInput("")
+      window.dispatchEvent(new Event("ai-settings-updated"))
+      toast.success("AI 设置已保存")
+    } catch (err: any) { toast.error(err.message || "保存失败") }
+    finally { setSaving(false) }
+  }
+
+  const handleClearKey = async () => {
+    if (!confirm("确定清除已保存的 API Key 吗？")) return
+    try {
+      const res = await authFetch("/api/ai/settings", {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ api_key: "__CLEAR__" }),
+      })
+      if (!res.ok) throw new Error("清除失败")
+      setHasSavedKey(false)
+      setKeyPreview("")
+      setApiKeyInput("")
+      toast.success("API Key 已清除")
+    } catch { toast.error("清除失败") }
+  }
+
+  const handleTest = async () => {
+    setTesting(true)
+    try {
+      const res = await authFetch("/api/ai/test-connection", { method: "POST" })
+      const d = await res.json()
+      if (d.ok) { toast.success("连接成功") }
+      else { toast.error(d.error || "连接失败") }
+    } catch { toast.error("测试请求失败") }
+    finally { setTesting(false) }
+  }
+
+  // Model options based on provider
+  const modelOptions = provider === "deepseek" ? [
+    { value: "deepseek-chat", label: "DeepSeek Chat：适合普通对话和任务处理" },
+    { value: "deepseek-reasoner", label: "DeepSeek Reasoner：适合需要更强推理的问题" },
+  ] : null
+
+  return (
+    <Card>
+      <CardHeader><CardTitle className="text-base flex items-center gap-2"><Bot className="h-4 w-4" />AI 设置</CardTitle></CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-1.5">
+          <Label>API 服务商</Label>
+          <select value={provider} onChange={(e) => setProvider(e.target.value)} className="w-full h-8 rounded-md border border-input bg-background px-2.5 text-sm">
+            <option value="deepseek">DeepSeek</option>
+            <option value="openai-compatible">OpenAI 兼容接口</option>
+            <option value="custom">自定义 OpenAI-Compatible API</option>
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <Label>API Base URL</Label>
+          <Input value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} placeholder="https://api.deepseek.com" />
+        </div>
+        <div className="space-y-1.5">
+          <Label>API Key</Label>
+          {hasSavedKey && !apiKeyInput && (
+            <p className="text-xs text-muted-foreground">已保存 API Key：{keyPreview}</p>
+          )}
+          <div className="flex gap-2">
+            <Input type={showKey ? "text" : "password"} value={apiKeyInput}
+              onChange={(e) => setApiKeyInput(e.target.value)}
+              placeholder={hasSavedKey ? "输入新 Key 以替换" : "sk-..."} className="flex-1" />
+            <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => setShowKey(!showKey)}>
+              {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </Button>
+          </div>
+          <p className="text-[10px] text-muted-foreground">API Key 仅用于服务端调用 AI，不会暴露到浏览器。</p>
+          {hasSavedKey && (
+            <Button variant="ghost" size="sm" className="text-destructive h-7 text-xs" onClick={handleClearKey}>清除 API Key</Button>
+          )}
+        </div>
+        <div className="space-y-1.5">
+          <Label>模型选择</Label>
+          {modelOptions ? (
+            <select value={model} onChange={(e) => setModel(e.target.value)} className="w-full h-8 rounded-md border border-input bg-background px-2.5 text-sm">
+              {modelOptions.map((o) => (<option key={o.value} value={o.value}>{o.label}</option>))}
+            </select>
+          ) : (
+            <Input value={model} onChange={(e) => setModel(e.target.value)} placeholder="输入模型名" />
+          )}
+        </div>
+        <div className="flex items-center justify-between">
+          <div><Label className="text-sm">思考模式</Label><p className="text-[10px] text-muted-foreground">启用后优先使用支持推理的模型</p></div>
+          <input type="checkbox" checked={thinkMode} onChange={(e) => setThinkMode(e.target.checked)} className="rounded" />
+        </div>
+        <div className="space-y-1.5">
+          <Label>思考强度</Label>
+          <select value={thinkLevel} onChange={(e) => setThinkLevel(e.target.value)} className="w-full h-8 rounded-md border border-input bg-background px-2.5 text-sm">
+            <option value="low">低：更快，适合简单问答</option>
+            <option value="medium">中：平衡速度和质量</option>
+            <option value="high">高：更充分，适合复杂任务拆解</option>
+          </select>
+        </div>
+        <div className="flex items-center justify-between">
+          <div><Label className="text-sm">多轮对话上下文</Label><p className="text-[10px] text-muted-foreground">开启后 AI 会参考当前会话历史</p></div>
+          <input type="checkbox" checked={multiTurn} onChange={(e) => setMultiTurn(e.target.checked)} className="rounded" />
+        </div>
+        <div className="space-y-1.5">
+          <Label>上下文轮数</Label>
+          <select value={contextRounds} onChange={(e) => setContextRounds(e.target.value)} className="w-full h-8 rounded-md border border-input bg-background px-2.5 text-sm">
+            {["4", "8", "12", "20"].map((v) => (<option key={v} value={v}>{v} 轮</option>))}
+          </select>
+          <p className="text-[10px] text-muted-foreground">发送给 AI 的最近历史消息数量</p>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleSave} disabled={saving}>{saving ? "保存中..." : "保存 AI 设置"}</Button>
+          <Button variant="outline" onClick={handleTest} disabled={testing}>{testing ? "测试中..." : "测试 AI 连接"}</Button>
         </div>
       </CardContent>
     </Card>
@@ -366,6 +533,9 @@ export default function AppSettingsPage() {
 
         {/* Category Management */}
         <CategoryManagement />
+
+        {/* AI Settings */}
+        <AISettings />
 
         {/* Reset — at the very bottom */}
         <Card className="border-dashed">
